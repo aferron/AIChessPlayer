@@ -1,7 +1,8 @@
 # AIChessPlayer
-An exploration of methods to improve the classic Artificial Intelligence algorithm Minimax as used by an adversial chess-playing agent
+**An exploration of methods to improve the classic Artificial Intelligence algorithm Minimax as used by an adversial chess-playing agent**
+
 ---
-## Install Requirements:
+## Install Requirements
 ```bash
 # Used libraries include chess, gmpy2, and numpy.
 # The node class within also requires python 3.7+.
@@ -12,8 +13,21 @@ pip install -r requirements.txt
 > The name of the game is pawn chess. Each player starts with a row of pawns with all of the normal legal moves. If one pawn gets to the other
 end of the board the game is over. If there is a stalemate they tie.
 
+```bash
+. . . . . . . .
+p p p p p p p p
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+P P P P P P P P
+. . . . . . . .
+```
+
 > This project uses the python [Chess Library](https://python-chess.readthedocs.io/en/latest/).
 
+---
+## Setup and State Representation
 > The building block of the chess library is a 64 bit integer state representation. To track all pawns for a particular player for example each 1 or 0 in the binary of the integer corresponds to a position on the board. As such, each player has an integer to track their pawns, rooks, knights, bishops, king, and queen.
 
 >Using binary representations decreases processing time.
