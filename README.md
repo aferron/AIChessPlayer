@@ -54,7 +54,7 @@ __make_a_move(chess.A2, chess.A4)
     - Alpha Beta Pruning
 ---
 ### Heuristics
-- Collective distance from the end of the board.
+
 ---
 ### Tools
 - Board to Array: Convert any 64 bit int into a 1 or 2d array for binary free heuristics processing.
