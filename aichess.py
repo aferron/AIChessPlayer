@@ -1,10 +1,12 @@
 from aichessboard import AIChessBoard
 import chess
 from chess import Move
+from heuristics import * 
 
 class Game:
     def __init__(self) -> None:
         self.board = AIChessBoard('8/pppppppp/8/8/8/8/PPPPPPPP/8')
+        self.heuristic = Heurstics()
 
     def __make_a_move(self, move_from: chess.Square, move_to: chess.Square) -> None:
         self.board.push(Move(move_from, move_to))
