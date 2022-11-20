@@ -7,7 +7,7 @@ import chess
 import numpy as np
 from chessplayer import ChessPlayer
 
-DEPTH = 3
+DEPTH = 5
 MIN_DEFAULT = 99999
 MAX_DEFAULT = -99999
 
@@ -36,9 +36,11 @@ class Node:
 
 
 class minimaxPlayer(ChessPlayer):
+    def __init__(self, depth: int):
+        self.depth = depth
 
     def get_next_move(self, board: AIChessBoard) -> Move:
-        return self.min_max(board, DEPTH)
+        return self.min_max(board, self.depth)
 
     # Wrapper function for pre_order
     def min_max(self, board: AIChessBoard, depth: int) -> chess.Move:
