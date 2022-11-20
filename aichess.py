@@ -1,5 +1,6 @@
 from game import Game
 from randomchessplayer import RandomChessPlayer
+from minimaxchessplayer import minimaxPlayer
 
 class AIChess:
     def __init__(self, iterations: int, visual: bool, verbose: bool) -> None:
@@ -15,12 +16,12 @@ class AIChess:
         player1_wins = 0
         draws = 0
         for i in range(self.__iterations):
-            player1 = RandomChessPlayer()
+            player1 = minimaxPlayer()
             player2 = RandomChessPlayer()
             game = Game(
-                white=player1, 
-                black=player2, 
-                visual=self.__visual, 
+                white=player1,
+                black=player2,
+                visual=self.__visual,
                 verbose=self.__verbose
             )
 
@@ -40,4 +41,4 @@ class AIChess:
         print("draws percent:", self.__percent_draws)
         print("number iterations:", self.__iterations)
 
-AIChess(iterations=1000, visual=False, verbose=False).run()
+AIChess(iterations=10, visual=False, verbose=False).run()
