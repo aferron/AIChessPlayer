@@ -82,7 +82,7 @@ class minimaxPlayer(ChessPlayer):
             """
             tree.append(child_node)
 
-        # Return a random move in the absense of heuristic difference
+        # Return a random move in the absence of heuristic difference
         if tree.count(tree[0]) == len(tree):
             choice = np.random.choice(tree)
             if not is_root:
