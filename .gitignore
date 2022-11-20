@@ -1,6 +1,5 @@
-backups
+backups*
 notes.py
 __pycache__*
-backups
 notes.py
-profiles
+profiles*
