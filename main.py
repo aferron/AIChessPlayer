@@ -27,7 +27,6 @@ rects1 = ax.bar(r1, wins, width, label='Wins')
 rects2 = ax.bar(r2, losses, width, label='Losses')
 rects3 = ax.bar(r3, draws, width, label='Draws')
 
-# Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_ylabel('Percent Wins')
 ax.set_xlabel('Depth (Number of Moves Look Ahead)')
 ax.set_xlabel('Run #')
