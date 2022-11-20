@@ -48,7 +48,3 @@ def pawn_board_to_int(board_config):
         0 if there is no overlap. Membership in a square can be checked.
         """
         return chess.Board(board_config).pawns
-
-print("\n")
-print(chess.Board('8/pppppppp/8/8/8/8/PPPPPPPP/8'))
-print("\n")
