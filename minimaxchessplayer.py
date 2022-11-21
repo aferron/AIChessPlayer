@@ -20,9 +20,9 @@ class Node:
     win_status:     Any=field(compare=False)
     max:            Any=field(compare=False)
     min:            Any=field(compare=False)
-    parent:          Any=field(compare=False)
+    parent:         Any=field(compare=False)
 
-    def __init__(self, reward, board, move, win_status, min, max, parent):
+    def __init__(self, reward: int, board: AIChessBoard, move: Move, win_status: int, min: int, max: int, parent: Any):
         self.reward = reward
         self.board = board
         self.move = move
