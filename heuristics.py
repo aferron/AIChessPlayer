@@ -88,12 +88,21 @@ class Heuristics:
 
     def distance_from_opposite_side_of_board(self, matrix_board: Board, player_color: chess.Color):
         heuristic_value = 0
-        for counter, row in enumerate(matrix_board):
-            if( (counter > len(matrix_board) - 3) if player_color == chess.WHITE else (counter < 2)): # the first two rows are starting locations
-                continue
-            for square in enumerate(row):
-                if(square == player_color):
-                    heuristic_value += (counter - 1) 
+        length_of_board = len(matrix_board)
+        if(player_color == chess.WHITE):
+            for counter, row in enumerate(matrix_board):
+                if(counter > (length_of_board - 2)):
+                    continue
+                for square in enumerate(row):
+                    if(square == player_color):
+                        heuristic_value += (length_of_board - counter - 2) 
+        elif(player_color == chess.BLACK):
+            for counter, row in enumerate(matrix_board):
+                if(counter < 2):
+                    continue
+                for square in enumerate(row):
+                    if(square == player_color):
+                        heuristic_value += counter - 1
         return heuristic_value
 
     def number_of_stacked_pawns(self, matrix_board: Board, player_color: chess.Color):
