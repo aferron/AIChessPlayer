@@ -1,26 +1,32 @@
 from game import Game
 from randomchessplayer import RandomChessPlayer
+from minimaxchessplayer import minimaxPlayer
+import numpy as np
+import matplotlib.pyplot as plt
 
 class AIChess:
-    def __init__(self, iterations: int, visual: bool, verbose: bool) -> None:
+    def __init__(self, iterations: int, visual: bool, verbose: bool, depth: int) -> None:
         self.__iterations: int = iterations
         self.__visual: bool = visual
         self.__verbose: bool = verbose
         self.__percent_wins_player1: float = 0.0
         self.__percent_wins_player2: float = 0.0
         self.__percent_draws: float = 0.0
+        self.__depth = depth
 
     # TODO: Build up more structure/abstractions to evaluate various player types
     def run(self):
         player1_wins = 0
         draws = 0
         for i in range(self.__iterations):
+            # This is for testing until player type is incorporated into the class.
+            # player1 = minimaxPlayer(self.__depth)
             player1 = RandomChessPlayer()
             player2 = RandomChessPlayer()
             game = Game(
-                white=player1, 
-                black=player2, 
-                visual=self.__visual, 
+                white=player1,
+                black=player2,
+                visual=self.__visual,
                 verbose=self.__verbose
             )
 
@@ -39,5 +45,7 @@ class AIChess:
         print("player 2 win percent:", self.__percent_wins_player2)
         print("draws percent:", self.__percent_draws)
         print("number iterations:", self.__iterations)
+        return self.__percent_wins_player1, self.__percent_wins_player2, self.__percent_draws
 
-AIChess(iterations=1000, visual=False, verbose=False).run()
+        # How to use:
+        # AIChess(iterations=10, visual=False, verbose=False, depth=1).run()

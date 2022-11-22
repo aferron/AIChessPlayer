@@ -3,6 +3,7 @@ import chess
 from chess import Move
 from chessplayer import ChessPlayer
 
+
 class Game:
     def __init__(self, white: ChessPlayer, black: ChessPlayer, visual: bool, verbose: bool) -> None:
         self.player_white = white
@@ -25,7 +26,8 @@ class Game:
                 print("white" if outcome.winner else "black", " wins")
 
     def __make_a_move(self, move: Move) -> None:
-        self.board.push(move)
+        if move != None:
+            self.board.push(move)
         if self.__visual:
             print(self.board, "\n")
         outcome = self.board.outcome()
@@ -39,7 +41,11 @@ class Game:
         while self.terminated is False:
             player = self.player_white if self.board.turn is True else self.player_black
             try:
-                self.__make_a_move(player.get_next_move(self.board))
+                player_move = player.get_next_move(self.board)
+                if player_move == None:
+                    self.terminated = True
+                    return None
+                self.__make_a_move(player_move)
             except ChessPlayer.ChessPlayerException as e:
                 self.terminated = True
                 return None
