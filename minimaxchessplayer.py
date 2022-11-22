@@ -141,10 +141,10 @@ class minimaxPlayer(ChessPlayer):
     def check_terminal_state(self, board: AIChessBoard, root: Node, depth: int) -> Node:
         # Return if we hit a terminal state
         if self.white_wins(board):
-            reward += 10 if board.turn == chess.WHITE else -10
+            reward = 10 if board.turn == chess.WHITE else -10
             return Node(reward,root.board,root.move,1,MIN_DEFAULT,MAX_DEFAULT, root)
         elif self.black_wins(board):
-            reward += 10 if board.turn == chess.BLACK else -10
+            reward = 10 if board.turn == chess.BLACK else -10
             return Node(reward,root.board,root.move,-1,MIN_DEFAULT,MAX_DEFAULT, root)
         elif depth <= 0:
             reward = 0
