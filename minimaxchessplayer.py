@@ -6,6 +6,7 @@ from typing import Any
 import chess
 import numpy as np
 from chessplayer import ChessPlayer
+from heuristics import *
 
 DEPTH = 5
 MIN_DEFAULT = 99999
@@ -31,6 +32,7 @@ class Node:
         self.max = max
         self.parent = parent
 
+
     def copy(self):
         return Node(self.reward, self.board, self.move, self.win_status, self.min, self.max, self.parent)
 
@@ -38,6 +40,7 @@ class Node:
 class minimaxPlayer(ChessPlayer):
     def __init__(self, depth: int):
         self.depth = depth
+        self.heuristic_calculator = Heuristics([Heuristic.Piece_Could_Be_Captured, Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces])
 
     def get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board, self.depth)
@@ -118,8 +121,10 @@ class minimaxPlayer(ChessPlayer):
 
 
     def calc_reward(self,board: AIChessBoard) -> int:
-        # Integrate heuristics
-        return 0
+        heuristic_value = self.heuristic_calculator.return_heuristic_value(board)
+        # print(heuristic_value)
+        return heuristic_value
+
 
 
     def white_wins(self, board: AIChessBoard) -> bool:
@@ -136,10 +141,10 @@ class minimaxPlayer(ChessPlayer):
     def check_terminal_state(self, board: AIChessBoard, root: Node, depth: int) -> Node:
         # Return if we hit a terminal state
         if self.white_wins(board):
-            reward = 10 if board.turn == chess.WHITE else -10
+            reward += 10 if board.turn == chess.WHITE else -10
             return Node(reward,root.board,root.move,1,MIN_DEFAULT,MAX_DEFAULT, root)
         elif self.black_wins(board):
-            reward = 10 if board.turn == chess.BLACK else -10
+            reward += 10 if board.turn == chess.BLACK else -10
             return Node(reward,root.board,root.move,-1,MIN_DEFAULT,MAX_DEFAULT, root)
         elif depth <= 0:
             reward = 0

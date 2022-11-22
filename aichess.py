@@ -20,8 +20,8 @@ class AIChess:
         draws = 0
         for i in range(self.__iterations):
             # This is for testing until player type is incorporated into the class.
-            # player1 = minimaxPlayer(self.__depth)
-            player1 = RandomChessPlayer()
+            player1 = minimaxPlayer(self.__depth)
+            # player1 = RandomChessPlayer()
             player2 = RandomChessPlayer()
             game = Game(
                 white=player1,
