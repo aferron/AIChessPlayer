@@ -86,4 +86,3 @@ class AIChess:
         # results = aichess.get_results()
         # for result in results:
         #     print(result)
-        
