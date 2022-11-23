@@ -38,6 +38,7 @@ class Node:
 class minimaxPlayer(ChessPlayer):
     def __init__(self, depth: int):
         self.depth = depth
+        self.__name = self.__class__.__name__ + " (depth:" + str(depth) + ")"
 
     def get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board, self.depth)
@@ -146,3 +147,7 @@ class minimaxPlayer(ChessPlayer):
             return Node(reward,root.board,root.move,-1,MIN_DEFAULT,MAX_DEFAULT, root)
         else:
             return None
+
+
+    def get_name(self) -> str:
+        return self.__name
