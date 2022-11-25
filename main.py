@@ -6,19 +6,17 @@ from minimaxchessplayer import minimaxPlayer
 
 # Testing
 title = 'Random Agent VS Minimax Agent - 500 iterations per run'
-num_iterations = 50
-depth_iterations = [1,2]
+num_iterations = 500
+depth_iterations = [1,2,3,4,5]
 wins, losses, draws = np.empty(len(depth_iterations)), np.empty(len(depth_iterations)), np.empty(len(depth_iterations))
 baseline = RandomChessPlayer()
 testplayers = [minimaxPlayer(depth=depth) for depth in depth_iterations]
-aichess = AIChess(iterations=num_iterations, baseline=baseline, testplayers=testplayers)
-test_results = aichess.run()
+test_results = AIChess(iterations=num_iterations, baseline=baseline, testplayers=testplayers).run()
 for i, depth_test in enumerate(test_results):
     temp_wins, temp_losses, temp_draws = depth_test.percent_wins_player1, depth_test.percent_wins_player2, depth_test.percent_draws
     wins[i] = np.round(temp_wins, 2) * 100
     losses[i] = np.round(temp_losses, 2) * 100
     draws[i] = np.round(temp_draws, 2) * 100
-
 
 # Graphs
 by_depth = True

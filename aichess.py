@@ -2,8 +2,6 @@ from array import *
 from chessplayer import ChessPlayer
 from dataclasses import dataclass
 from game import Game
-import matplotlib.pyplot as plt
-import numpy as np
 from tqdm import tqdm
 
 
