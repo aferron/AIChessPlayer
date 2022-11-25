@@ -90,14 +90,14 @@ class minimaxPlayer(ChessPlayer):
                 choice.move = root.move
             return choice
 
-        # Return Max if it's whites turn
-        if minimax:
+        # Return Max if the original players turn
+        if minimax == root.board.turn:
             max_tree = max(tree)
             if not is_root:
                 max_tree.move = root.move
             return max(tree)
 
-        else: # Return min if it's Black's turn
+        else: # Return min otherwise
             min_tree = min(tree)
             if not is_root:
                 min_tree.move = root.move
