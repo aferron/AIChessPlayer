@@ -1,77 +1,114 @@
-from  abc import ABC, abstractmethod
+from __future__ import annotations
 from aichessboard import AIChessBoard
-from chess import Move
-from dataclasses import dataclass, field
-from typing import Any
 import chess
-import numpy as np
+from chess import Move
 from chessplayer import ChessPlayer
+from dataclasses import dataclass, field
+from enum import Enum
+import numpy as np
 
-DEPTH = 5
+REWARD_DEFAULT = 0
 MIN_DEFAULT = 99999
 MAX_DEFAULT = -99999
+BACK_ROW_FOR_WHITE = 18374686479671623680
+BACK_ROW_FOR_BLACK = 255
+
+class WinReward(Enum):
+    WIN = 10
+    LOSS = -10
+    DRAW = 0
+
+class WinStatus(Enum):
+    WIN = 1
+    LOSS = -1
+    DRAW = 0
 
 
+# The fields max and min in Node can be used for AlphaBeta pruning
 @dataclass(order=True)
 class Node:
-    reward:         int
-    board:          Any=field(compare=False)
-    move:           Any=field(compare=False)
-    win_status:     Any=field(compare=False)
-    max:            Any=field(compare=False)
-    min:            Any=field(compare=False)
-    parent:         Any=field(compare=False)
+    reward_if_taking_best_move: int
+    board:          AIChessBoard=field(compare=False)
+    move_that_generated_this_board: Move=field(compare=False)
+    best_move_from_board: Move=field(compare=False)
+    win_status:     WinStatus=field(compare=False) 
+    max:            int=field(compare=False)
+    min:            int=field(compare=False)
+    parent:         Node=field(compare=False)
 
-    def __init__(self, reward: int, board: AIChessBoard, move: Move, win_status: int, min: int, max: int, parent: Any):
-        self.reward = reward
-        self.board = board
-        self.move = move
-        self.win_status = win_status
-        self.min = min
-        self.max = max
-        self.parent = parent
+    def copy(self) -> Node:
+        return Node(
+            self.reward_if_taking_best_move,
+            self.board, 
+            self.move_that_generated_this_board,
+            self.best_move_from_board,
+            self.win_status, 
+            self.min, 
+            self.max, 
+            self.parent
+        )
 
-    def copy(self):
-        return Node(self.reward, self.board, self.move, self.win_status, self.min, self.max, self.parent)
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Node):
+            return NotImplemented
+        return self.reward_if_taking_best_move == other.reward_if_taking_best_move
 
-
-class minimaxPlayer(ChessPlayer):
-    def __init__(self, depth: int):
+class MinimaxPlayer(ChessPlayer):
+    def __init__(self, depth: int) -> None:
         self.depth = depth
         self.__name = self.__class__.__name__ + " (depth:" + str(depth) + ")"
 
     def get_next_move(self, board: AIChessBoard) -> Move:
-        return self.min_max(board, self.depth)
+        return self.min_max(board=board, depth=self.depth)
 
     # Wrapper function for pre_order
     def min_max(self, board: AIChessBoard, depth: int) -> chess.Move:
-        board_1 = board
-        # The line below toggles the current player opposite for the wrapper function.
-        minimax = not board_1.turn
         node_depth = depth + 1 #increment to let preorder decrement to the proper depth
-        root = Node(0, board, None, None, 0, 0, None)
-        solution_node = self.pre_order(board_1, root, minimax, node_depth)
-        return solution_node.move
+        root = Node(
+            reward_if_taking_best_move=REWARD_DEFAULT,
+            board=board,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
+            win_status=None,
+            min=MIN_DEFAULT,
+            max=MAX_DEFAULT,
+            parent=None
+        )
+        solution_node = self.pre_order(root_board=board, current=root, depth=node_depth)
+        best_move = solution_node.best_move_from_board
+        if best_move == None:
+            raise ChessPlayer.ChessPlayerException("No legal moves remain")
+        return best_move
 
 
     # Preorder DFS of binary tree.
-    def pre_order(self, board: AIChessBoard, root: Node, minimax: bool, depth: int) -> Node:
-        depth -= 1 # decrement the depth on each call
-        minimax = (minimax == False) # This will switch max and min on each call
-        root.board.turn = minimax # Set whose turn it is
-        is_root = (root.board == board) # Check if this is the real root node
+    def pre_order(self, root_board: AIChessBoard, current: Node, depth: int) -> Node:
 
-        early_exit = self.check_terminal_state(board, root, depth)
-        if early_exit != None:
-            return early_exit
+        early_exit_reward = self.check_terminal_state(
+            root=current, 
+            depth=depth, 
+            maximizer=root_board.turn
+        )
+        if early_exit_reward != None:
+            current.reward_if_taking_best_move = early_exit_reward
+            if early_exit_reward < 0:
+                current.win_status = WinStatus.LOSS
+            elif early_exit_reward > 0:
+                current.win_status = WinStatus.WIN
+            else:
+                current.win_status = WinStatus.DRAW
+            return current
 
-        children = self.unpack(root) # Unpack each move to see the states
-        if children.size == 0: # No viable moves are left in this path.
-            return root
+        # Unpack each move to see the states
+        children: np.array(Node) = self.unpack(root=current)
+        # Check if no viable moves are left in this path
+        if children.size == 0: 
+            current.reward_if_taking_best_move = WinReward.DRAW.value
+            return current
 
         tree = []
         for child in children:
-            child_node = self.pre_order(board, child, minimax, depth)
+            child_node = self.pre_order(root_board=root_board, current=child, depth=depth - 1)
             """
             alpha beta pruning might go here - after opening
             a node and getting the reward value the
@@ -85,66 +122,61 @@ class minimaxPlayer(ChessPlayer):
 
         # Return a random move in the absence of heuristic difference
         if tree.count(tree[0]) == len(tree):
-            choice = np.random.choice(tree)
-            if not is_root:
-                choice.move = root.move
-            return choice
-
-        # Return Max if it's whites turn
-        if minimax:
-            max_tree = max(tree)
-            if not is_root:
-                max_tree.move = root.move
-            return max(tree)
-
-        else: # Return min if it's Black's turn
-            min_tree = min(tree)
-            if not is_root:
-                min_tree.move = root.move
-            return min(tree)
+            best_child: Node = np.random.choice(tree)
+        # otherwise maximize or minimize depending on whose turn it is
+        else:
+            best_child: Node = max(tree) if (current.board.turn == root_board.turn) else min(tree)
+        current.reward_if_taking_best_move = best_child.reward_if_taking_best_move
+        current.best_move_from_board = best_child.move_that_generated_this_board
+        return current
 
 
     # Unpack nodes into their child states
     def unpack(self,root: Node) -> np.array(Node):
-        base_board = root.board
+        base_board: AIChessBoard = root.board
         legalmoves = np.array(list(root.board.legal_moves))
         nodes = np.empty(len(legalmoves), dtype=Move)
-        win_status = 0 # This case is taken care of by recursive call
         for i, move in enumerate(legalmoves):
             board = base_board.copy()
             board.push(move)
+            # this takes the place of current.board.turn = minimax in pre_order
+            # push changes the board turn so this shouldn't be necessary
+            board.turn = not base_board.turn
             reward = self.calc_reward(board)
-            nodes[i] = Node(reward, board, move, win_status,MIN_DEFAULT,MAX_DEFAULT, root)
+            nodes[i] = Node(
+                reward_if_taking_best_move=reward,
+                board=board, 
+                move_that_generated_this_board=move,
+                best_move_from_board=None,
+                win_status=None, # taken care of by recursive call
+                min=MIN_DEFAULT, 
+                max=MAX_DEFAULT, 
+                parent=root
+            )
         return nodes
 
 
     def calc_reward(self,board: AIChessBoard) -> int:
         # Integrate heuristics
-        return 0
+        return WinReward.DRAW.value
 
 
     def white_wins(self, board: AIChessBoard) -> bool:
-        # The number below is a binary encoding for the chessboard.
-        return 18374686479671623680 & board.occupied_co[chess.WHITE] != 0
+        return BACK_ROW_FOR_WHITE & board.occupied_co[chess.WHITE] != 0
 
 
-    def black_wins(self, board):
-        # The number below is a binary encoding for the chessboard.
-        return 255 & board.occupied_co[chess.BLACK] != 0
+    def black_wins(self, board: AIChessBoard) -> bool:
+        return BACK_ROW_FOR_BLACK & board.occupied_co[chess.BLACK] != 0
 
 
     # Check if the state is an end state and return rewards if so
-    def check_terminal_state(self, board: AIChessBoard, root: Node, depth: int) -> Node:
-        # Return if we hit a terminal state
-        if self.white_wins(board):
-            reward = 10 if board.turn == chess.WHITE else -10
-            return Node(reward,root.board,root.move,1,MIN_DEFAULT,MAX_DEFAULT, root)
-        elif self.black_wins(board):
-            reward = 10 if board.turn == chess.BLACK else -10
-            return Node(reward,root.board,root.move,-1,MIN_DEFAULT,MAX_DEFAULT, root)
+    def check_terminal_state(self, root: Node, depth: int, maximizer: chess.Color) -> int:
+        if self.white_wins(root.board):
+            return WinReward.WIN.value if maximizer == chess.WHITE else WinReward.LOSS.value
+        elif self.black_wins(root.board):
+            return WinReward.WIN.value if maximizer == chess.BLACK else WinReward.LOSS.value
         elif depth <= 0:
-            reward = 0
-            return Node(reward,root.board,root.move,-1,MIN_DEFAULT,MAX_DEFAULT, root)
+            return self.calc_reward(root.board)
         else:
             return None
 
