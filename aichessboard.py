@@ -21,3 +21,11 @@ class AIChessBoard(chess.Board):
         print("backranks: {0:b}".format(chess.BB_BACKRANKS))
         print("pawns: {0:b}".format(self.pawns))
         print("pawns & backranks: {0:b}".format(self.pawns & chess.BB_BACKRANKS))
+
+# simple_board_fen = '8/1p6/8/8/8/8/1p6/8'
+# board = AIChessBoard(simple_board_fen)
+# print(board)
+# print()
+# print(AIChessBoard())
+# print(AIChessBoard().turn)
+# print(AIChessBoard().legal_moves)

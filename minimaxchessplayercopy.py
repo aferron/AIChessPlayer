@@ -25,15 +25,6 @@ class Node:
     min:            int=field(compare=False)
     parent:         Any=field(compare=False)
 
-    # def __init__(self, reward: int, board: AIChessBoard, move: Move, win_status: int, min: int, max: int, parent: Any):
-        # self.reward = reward
-        # self.board = board
-        # self.move = move
-        # self.win_status = win_status
-        # self.min = min
-        # self.max = max
-        # self.parent = parent
-
     def copy(self) -> Node:
         return Node(self.reward, self.board, self.move, self.win_status, self.min, self.max, self.parent)
 
@@ -52,33 +43,18 @@ class MinimaxPlayer(ChessPlayer):
 
     # Wrapper function for pre_order
     def min_max(self, board: AIChessBoard, depth: int) -> chess.Move:
-
-        # do we need board_1?
-        board_1 = board
-
-        # what is minimax?
-        # The line below toggles the current player opposite for the wrapper function.
-        minimax = not board_1.turn
-        node_depth = depth + 1 #increment to let preorder decrement to the proper depth
+        maximizer = board.turn
         root = Node(reward=0, board=board, move=None, win_status=None, min=0, max=0, parent=None)
-        solution_node = self.pre_order(board=board_1, root=root, minimax=minimax, depth=node_depth)
-        print ("move selected:", solution_node.move)
+        solution_node = self.pre_order(root=root, minimax=minimax, depth=depth, maximizer=maximizer)
+        # print ("move selected:", solution_node.move)
         return solution_node.move
 
 
     # Preorder DFS of binary tree.
-    def pre_order(self, board: AIChessBoard, root: Node, minimax: bool, depth: int) -> Node:
-        depth -= 1 # decrement the depth on each call
-
-        # This works differently depending on whose turn it is at the actual root
-        minimax = (minimax == False) # This will switch max and min on each call
-        print("minimax:", minimax)
-
-        # Why do we change whose turn it is on the board?
-        root.board.turn = minimax # Set whose turn it is
+    def pre_order(self, root: Node, depth: int, maximizer: bool) -> Node:
         is_root = (root.board == board) # Check if this is the real root node
 
-        early_exit = self.check_terminal_state(board=board, root=root, depth=depth)
+        early_exit = self.check_terminal_state(root=root, depth=depth)
         if early_exit != None:
             return early_exit
 
@@ -88,7 +64,7 @@ class MinimaxPlayer(ChessPlayer):
 
         tree = []
         for child in children:
-            child_node = self.pre_order(board=board, root=child, minimax=minimax, depth=depth)
+            child_node = self.pre_order(board=board, root=child, minimax=minimax, depth=depth - 1)
             """
             alpha beta pruning might go here - after opening
             a node and getting the reward value the
@@ -160,7 +136,7 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Check if the state is an end state and return rewards if so
-    def check_terminal_state(self, board: AIChessBoard, root: Node, depth: int) -> Node:
+    def check_terminal_state(self, root: Node, depth: int) -> Node:
         # Return if we hit a terminal state
         if self.white_wins(board):
             # Not sure this gives the correct reward
@@ -210,7 +186,6 @@ class MinimaxPlayer(ChessPlayer):
 simple_board_fen = '8/1p6/8/8/8/8/1p6/8'
 board = AIChessBoard(simple_board_fen)
 board.turn = chess.BLACK
-print("legal moves", board.legal_moves)
 
 print("turn:", board.turn)
 minimax = MinimaxPlayer(depth=1)

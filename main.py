@@ -2,15 +2,15 @@ from aichess import AIChess
 from randomchessplayer import RandomChessPlayer
 import numpy as np
 import matplotlib.pyplot as plt
-from minimaxchessplayer import minimaxPlayer
+from minimaxchessplayer import MinimaxPlayer
 
 # Testing
 title = 'Random Agent VS Minimax Agent - 500 iterations per run'
-num_iterations = 500
-depth_iterations = [1,2,3,4,5]
+num_iterations = 50
+depth_iterations = [1,2]
 wins, losses, draws = np.empty(len(depth_iterations)), np.empty(len(depth_iterations)), np.empty(len(depth_iterations))
 baseline = RandomChessPlayer()
-testplayers = [minimaxPlayer(depth=depth) for depth in depth_iterations]
+testplayers = [MinimaxPlayer(depth=depth) for depth in depth_iterations]
 test_results = AIChess(iterations=num_iterations, baseline=baseline, testplayers=testplayers).run()
 for i, depth_test in enumerate(test_results):
     temp_wins, temp_losses, temp_draws = depth_test.percent_wins_player1, depth_test.percent_wins_player2, depth_test.percent_draws
