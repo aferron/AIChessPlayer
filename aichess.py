@@ -30,7 +30,7 @@ class AIChess:
         self.__testplayers: array[ChessPlayer] = testplayers
 
     def run(self) -> array:
-        for (player, opponent) in (self.__testplayers, self.__baseline):
+        for (player, opponent) in zip(self.__testplayers, self.__baseline):
                 self.__run_one_set_of_opponents(player1=player, player2=opponent)
         return self.__results
 

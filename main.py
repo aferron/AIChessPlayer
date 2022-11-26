@@ -8,7 +8,7 @@ from heuristics import *
 # Testing
 title = 'Random Agent VS Minimax Agent - 50 iterations per run'
 num_iterations = 50
-depth_iterations = [1, 2]
+depth_iterations = [1, 2, 3]
 wins, losses, draws = np.empty(len(depth_iterations)), np.empty(len(depth_iterations)), np.empty(len(depth_iterations))
 baseline =  [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces]) for depth in depth_iterations]
 testplayers = [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Piece_Could_Be_Captured, Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces]) for depth in depth_iterations]
