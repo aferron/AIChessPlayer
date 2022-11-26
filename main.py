@@ -8,9 +8,9 @@ from heuristics import *
 # Testing
 title = 'Random Agent VS Minimax Agent - 50 iterations per run'
 num_iterations = 50
-depth_iterations = [1, 2, 3]
+depth_iterations = [1, 2]
 wins, losses, draws = np.empty(len(depth_iterations)), np.empty(len(depth_iterations)), np.empty(len(depth_iterations))
-baseline =  [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Distance_From_Starting_Location]) for depth in depth_iterations]
+baseline =  [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces]) for depth in depth_iterations]
 testplayers = [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Piece_Could_Be_Captured, Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces]) for depth in depth_iterations]
 test_results = AIChess(iterations=num_iterations, baseline=baseline, testplayers=testplayers).run()
 for i, depth_test in enumerate(test_results):

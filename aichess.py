@@ -30,9 +30,8 @@ class AIChess:
         self.__testplayers: array[ChessPlayer] = testplayers
 
     def run(self) -> array:
-        for player in self.__testplayers:
-            for opponents in self.__baseline:
-                self.__run_one_set_of_opponents(player1=player, player2=opponents)
+        for (player, opponent) in (self.__testplayers, self.__baseline):
+                self.__run_one_set_of_opponents(player1=player, player2=opponent)
         return self.__results
 
     def __run_one_set_of_opponents(self, player1: ChessPlayer, player2: ChessPlayer) -> None:
