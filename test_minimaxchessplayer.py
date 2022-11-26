@@ -1,8 +1,10 @@
 from aichessboard import AIChessBoard
 import chess
 from chess import Move
-from minimaxchessplayer import MinimaxPlayer, Node
+from chessplayer import ChessPlayer
+from minimaxchessplayer import MinimaxPlayer, Node, MAX_DEFAULT, MIN_DEFAULT
 import numpy as np
+import pytest
 
 WINNING_BOARD_FOR_WHITE = 'P7/1ppppppp/8/8/8/8/1PPPPPPP/8'
 WINNING_BOARD_FOR_BLACK = '8/1ppppppp/8/8/8/8/1PPPPPPP/p7'
@@ -23,6 +25,39 @@ class TestMinimaxChessPlayer:
             parent=None
         )
         assert node.reward_if_taking_best_move == 1
+
+    def test_two_equal_nodes_evaluated_as_equal(self) -> None:
+        board = AIChessBoard()
+        move = Move('a2', 'a3')
+        node1 = Node(
+            reward_if_taking_best_move=1,
+            board=board, 
+            move_that_generated_this_board=move,
+            best_move_from_board=None,
+            win_status=1, 
+            min=0, 
+            max=0, 
+            parent=None
+        )
+        node2 = node1.copy()
+        assert node1 == node2
+ 
+    def test_unequal_nodes_evaluate_as_not_equal(self) -> None:
+        board = AIChessBoard()
+        move = Move('a2', 'a3')
+        node1 = Node(
+            reward_if_taking_best_move=1,
+            board=board, 
+            move_that_generated_this_board=move,
+            best_move_from_board=None,
+            win_status=1, 
+            min=0, 
+            max=0, 
+            parent=None
+        )
+        node2 = node1.copy()
+        node2.reward_if_taking_best_move = 2
+        assert node1 != node2
 
     def test_white_wins_when_white_is_on_back_row(self) -> None:
         board = AIChessBoard(WINNING_BOARD_FOR_WHITE)
@@ -150,4 +185,76 @@ class TestMinimaxChessPlayer:
             player_loses=False,
             max_depth_reached=False
         )
+
+    def test_pre_order_returns_best_move(self) -> None:
+        board_fen = '8/1p1p4/8/8/8/5p2/1P1P4/8'
+        best_move = Move.from_uci('f3f2')
+        board = AIChessBoard(board_fen)
+        board.turn = chess.BLACK
+        node = Node(
+            reward_if_taking_best_move=0,
+            board=board,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
+            win_status=None,
+            max=MAX_DEFAULT,
+            min=MIN_DEFAULT,
+            parent=None
+        )
+        minimaxplayer = MinimaxPlayer(depth=3)
+        result = minimaxplayer.pre_order(root_board=board, current=node, depth=minimaxplayer.depth)
+        assert result.best_move_from_board == best_move
         
+    def test_exception_thrown_if_no_moves_possible(self) -> None:
+        board_fen = '8/1p1p4/1P1P4/8/8/8/8/8'
+        board = AIChessBoard(board_fen)
+        node = Node(
+            reward_if_taking_best_move=0,
+            board=board,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
+            win_status=None,
+            max=MAX_DEFAULT,
+            min=MIN_DEFAULT,
+            parent=None
+        )
+        minimaxplayer = MinimaxPlayer(depth=3)
+        with pytest.raises(ChessPlayer.ChessPlayerException):
+            minimaxplayer.get_next_move(board=board)
+        
+    def test_get_next_move_returns_best_move(self) -> None:
+        board_fen = '8/1p1p4/8/8/8/5p2/1P1P4/8'
+        best_move = Move.from_uci('f3f2')
+        board = AIChessBoard(board_fen)
+        board.turn = chess.BLACK
+        node = Node(
+            reward_if_taking_best_move=0,
+            board=board,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
+            win_status=None,
+            max=MAX_DEFAULT,
+            min=MIN_DEFAULT,
+            parent=None
+        )
+        minimaxplayer = MinimaxPlayer(depth=3)
+        result = minimaxplayer.get_next_move(board=board)
+        assert result == best_move
+
+    def test_get_next_move_returns_best_move_when_turn_is_white(self) -> None:
+        board_fen = '8/1p1p4/2P5/8/8/5p2/1P1P4/8'
+        best_move = Move.from_uci('c6d7')
+        board = AIChessBoard(board_fen)
+        node = Node(
+            reward_if_taking_best_move=0,
+            board=board,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
+            win_status=None,
+            max=MAX_DEFAULT,
+            min=MIN_DEFAULT,
+            parent=None
+        )
+        minimaxplayer = MinimaxPlayer(depth=3)
+        result = minimaxplayer.get_next_move(board=board)
+        assert result == best_move

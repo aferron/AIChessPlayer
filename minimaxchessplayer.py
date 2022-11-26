@@ -6,7 +6,6 @@ from chessplayer import ChessPlayer
 from dataclasses import dataclass, field
 from enum import Enum
 import numpy as np
-from typing import Any
 
 REWARD_DEFAULT = 0
 MIN_DEFAULT = 99999
@@ -49,7 +48,10 @@ class Node:
             self.parent
         )
 
-# TODO: write tests for everything
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Node):
+            return NotImplemented
+        return self.reward_if_taking_best_move == other.reward_if_taking_best_move
 
 class MinimaxPlayer(ChessPlayer):
     def __init__(self, depth: int) -> None:
@@ -73,7 +75,10 @@ class MinimaxPlayer(ChessPlayer):
             parent=None
         )
         solution_node = self.pre_order(root_board=board, current=root, depth=node_depth)
-        return solution_node.best_move_from_board
+        best_move = solution_node.best_move_from_board
+        if best_move == None:
+            raise ChessPlayer.ChessPlayerException("No legal moves remain")
+        return best_move
 
 
     # Preorder DFS of binary tree.
@@ -178,18 +183,3 @@ class MinimaxPlayer(ChessPlayer):
 
     def get_name(self) -> str:
         return self.__name
-
-
-
-simple_board_fen = '8/1p6/8/8/8/8/1p6/8'
-board = AIChessBoard(simple_board_fen)
-board.turn = chess.BLACK
-print("legal moves", board.legal_moves)
-
-print("turn:", board.turn)
-minimax = MinimaxPlayer(depth=1)
-minimax.get_next_move(board)
-print("turn:", board.turn)
-# move = Move('a2', 'a3')
-# Node(reward=1, board=board, move=move, win_status=1, min=0, max=1, parent=None)
-# print(AIChessBoard('P7/1ppppppp/8/8/8/8/1PPPPPPP/8'))

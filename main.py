@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from minimaxchessplayer import MinimaxPlayer
 
 # Testing
-title = 'Random Agent VS Minimax Agent - 500 iterations per run'
+title = 'Random Agent VS Minimax Agent - 50 iterations per run'
 num_iterations = 50
-depth_iterations = [1,2]
+depth_iterations = [1, 2, 3]
 wins, losses, draws = np.empty(len(depth_iterations)), np.empty(len(depth_iterations)), np.empty(len(depth_iterations))
 baseline = RandomChessPlayer()
 testplayers = [MinimaxPlayer(depth=depth) for depth in depth_iterations]
