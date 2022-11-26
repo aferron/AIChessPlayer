@@ -1,3 +1,5 @@
 chess
 gmpy2
+matplotlib.pyplot
 numpy
+tqdm
