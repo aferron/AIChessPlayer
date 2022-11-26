@@ -7,10 +7,8 @@ import chess
 import numpy as np
 from chessplayer import ChessPlayer
 
-DEPTH = 5
 MIN_DEFAULT = 99999
 MAX_DEFAULT = -99999
-
 
 @dataclass(order=True)
 class Node:
@@ -40,6 +38,10 @@ class minimaxPlayer(ChessPlayer):
         self.depth = depth
         self.__name = self.__class__.__name__ + " (depth:" + str(depth) + ")"
 
+    def __eq__(self, node):
+        return self.reward == node.reward
+
+
     def get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board, self.depth)
 
@@ -49,25 +51,25 @@ class minimaxPlayer(ChessPlayer):
         # The line below toggles the current player opposite for the wrapper function.
         minimax = not board_1.turn
         node_depth = depth + 1 #increment to let preorder decrement to the proper depth
-        root = Node(0, board, None, None, 0, 0, None)
-        solution_node = self.pre_order(board_1, root, minimax, node_depth)
+        current = Node(0, board, None, None, 0, 0, None)
+        solution_node = self.pre_order(board_1, current, minimax, node_depth)
         return solution_node.move
 
 
     # Preorder DFS of binary tree.
-    def pre_order(self, board: AIChessBoard, root: Node, minimax: bool, depth: int) -> Node:
+    def pre_order(self, board: AIChessBoard, current: Node, minimax: bool, depth: int) -> Node:
         depth -= 1 # decrement the depth on each call
         minimax = (minimax == False) # This will switch max and min on each call
-        root.board.turn = minimax # Set whose turn it is
-        is_root = (root.board == board) # Check if this is the real root node
+        current.board.turn = minimax # Set whose turn it is
+        is_root = (current.board == board) # Check if this is the real current node
 
-        early_exit = self.check_terminal_state(board, root, depth)
+        early_exit = self.check_terminal_state(board, current, depth)
         if early_exit != None:
             return early_exit
 
-        children = self.unpack(root) # Unpack each move to see the states
+        children = self.unpack(current) # Unpack each move to see the states
         if children.size == 0: # No viable moves are left in this path.
-            return root
+            return current
 
         tree = []
         for child in children:
@@ -76,45 +78,51 @@ class minimaxPlayer(ChessPlayer):
             alpha beta pruning might go here - after opening
             a node and getting the reward value the
             loop can be broken. The lines below can be used.
-            # if child_node.reward > root.max:
-            #     root.max = child_node.reward
-            # if child_node.reward < root.min:
-            #     root.min = child_node.reward
+            # if child_node.reward > current.max:
+            #     current.max = child_node.reward
+            # if child_node.reward < current.min:
+            #     current.min = child_node.reward
             """
             tree.append(child_node)
+
 
         # Return a random move in the absence of heuristic difference
         if tree.count(tree[0]) == len(tree):
             choice = np.random.choice(tree)
-            if not is_root:
-                choice.move = root.move
-            return choice
+            if is_root:
+                return choice
+            current.reward = choice.reward
+            return current
 
-        # Return Max if it's whites turn
-        if minimax:
+        # Return Max if the current players turn
+        if minimax == board.turn:
             max_tree = max(tree)
-            if not is_root:
-                max_tree.move = root.move
-            return max(tree)
+            if is_root:
+                return max_tree
+            else:
+                current.reward = max_tree.reward
+                return current
 
-        else: # Return min if it's Black's turn
+        else: # Return min if it's the next turn
             min_tree = min(tree)
-            if not is_root:
-                min_tree.move = root.move
-            return min(tree)
+            if is_root:
+                return min_tree
+            else:
+                current.reward = min_tree.reward
+                return current
 
 
     # Unpack nodes into their child states
-    def unpack(self,root: Node) -> np.array(Node):
-        base_board = root.board
-        legalmoves = np.array(list(root.board.legal_moves))
+    def unpack(self,current: Node) -> np.array(Node):
+        base_board = current.board
+        legalmoves = np.array(list(current.board.legal_moves))
         nodes = np.empty(len(legalmoves), dtype=Move)
         win_status = 0 # This case is taken care of by recursive call
         for i, move in enumerate(legalmoves):
             board = base_board.copy()
             board.push(move)
             reward = self.calc_reward(board)
-            nodes[i] = Node(reward, board, move, win_status,MIN_DEFAULT,MAX_DEFAULT, root)
+            nodes[i] = Node(reward, board, move, win_status,MIN_DEFAULT,MAX_DEFAULT, current)
         return nodes
 
 
@@ -134,17 +142,17 @@ class minimaxPlayer(ChessPlayer):
 
 
     # Check if the state is an end state and return rewards if so
-    def check_terminal_state(self, board: AIChessBoard, root: Node, depth: int) -> Node:
+    def check_terminal_state(self, board: AIChessBoard, current: Node, depth: int) -> Node:
         # Return if we hit a terminal state
-        if self.white_wins(board):
+        if self.white_wins(current.board):
             reward = 10 if board.turn == chess.WHITE else -10
-            return Node(reward,root.board,root.move,1,MIN_DEFAULT,MAX_DEFAULT, root)
-        elif self.black_wins(board):
+            return Node(reward,current.board,current.move,1,MIN_DEFAULT,MAX_DEFAULT, current)
+        elif self.black_wins(current.board):
             reward = 10 if board.turn == chess.BLACK else -10
-            return Node(reward,root.board,root.move,-1,MIN_DEFAULT,MAX_DEFAULT, root)
+            return Node(reward,current.board,current.move,-1,MIN_DEFAULT,MAX_DEFAULT, current)
         elif depth <= 0:
-            reward = 0
-            return Node(reward,root.board,root.move,-1,MIN_DEFAULT,MAX_DEFAULT, root)
+            current.reward = 0
+            return current
         else:
             return None
 
