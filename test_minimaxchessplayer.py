@@ -12,8 +12,17 @@ class TestMinimaxChessPlayer:
     def test_node_creation(self) -> None:
         board = AIChessBoard()
         move = Move('a2', 'a3')
-        node = Node(reward=1, board=board, move=move, win_status=1, min=0, max=1, parent=None)
-        assert node.reward == 1
+        node = Node(
+            reward_if_taking_best_move=1,
+            board=board, 
+            move_that_generated_this_board=move,
+            best_move_from_board=None,
+            win_status=1, 
+            min=0, 
+            max=0, 
+            parent=None
+        )
+        assert node.reward_if_taking_best_move == 1
 
     def test_white_wins_when_white_is_on_back_row(self) -> None:
         board = AIChessBoard(WINNING_BOARD_FOR_WHITE)
@@ -39,56 +48,58 @@ class TestMinimaxChessPlayer:
         board = AIChessBoard(NOT_WINNING_BOARD)
         minimaxplayer = MinimaxPlayer(depth=1)
         root = Node(
-            reward=0,
+            reward_if_taking_best_move=0,
             board=board,
-            move=None,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
             win_status=None,
             min=0,
             max=0,
             parent=None
         )
-        unpacked_moves = {node.move for node in minimaxplayer.unpack(root=root)}
+        unpacked_moves = {node.move_that_generated_this_board for node in minimaxplayer.unpack(root=root)}
 
         assert unpacked_moves == set(board.legal_moves)
 
     def __check_reward(
         self, 
-        player_turn: chess.Color, 
+        maximizer: chess.Color, 
         board_fen: str, 
         player_wins: bool,
         player_loses: bool, 
         max_depth_reached: bool
     ) -> None:
         board = AIChessBoard(board_fen)
-        board.turn = player_turn
+        board.turn = maximizer
         root = Node(
-            reward=0,
+            reward_if_taking_best_move=0,
             board=board,
-            move=None,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
             win_status=None,
             min=0,
             max=0,
             parent=None
         )
         minimaxplayer = MinimaxPlayer(depth=1)
-        result_node = minimaxplayer.check_terminal_state(
-            board=board, 
+        result_reward = minimaxplayer.check_terminal_state(
             root=root, 
-            depth=0 if max_depth_reached else 1
+            depth=0 if max_depth_reached else 1,
+            maximizer=maximizer
         )
 
         if player_wins:
-            assert result_node.reward == 10
+            assert result_reward == 10
         elif player_loses:
-            assert result_node.reward == -10
+            assert result_reward == -10
         elif max_depth_reached:
-            assert result_node.reward == 0
+            assert result_reward == 0
         else:
-            assert result_node == None
+            assert result_reward == None
 
     def test_check_terminal_state_returns_reward_if_white_is_maximizer_and_wins2(self) -> None:
         self.__check_reward(
-            player_turn=chess.WHITE, 
+            maximizer=chess.WHITE, 
             board_fen=WINNING_BOARD_FOR_WHITE,
             player_wins=True,
             player_loses=False,
@@ -97,7 +108,7 @@ class TestMinimaxChessPlayer:
         
     def test_negative_reward_returned_if_white_is_maximizer_and_loses(self) -> None:
         self.__check_reward(
-            player_turn=chess.WHITE, 
+            maximizer=chess.WHITE, 
             board_fen=WINNING_BOARD_FOR_BLACK,
             player_wins=False,
             player_loses=True,
@@ -106,7 +117,7 @@ class TestMinimaxChessPlayer:
         
     def test_check_terminal_state_returns_reward_if_black_is_maximizer_and_wins(self) -> None:
         self.__check_reward(
-            player_turn=chess.BLACK, 
+            maximizer=chess.BLACK, 
             board_fen=WINNING_BOARD_FOR_BLACK,
             player_wins=True,
             player_loses=False,
@@ -115,7 +126,7 @@ class TestMinimaxChessPlayer:
         
     def test_negative_reward_returned_if_black_is_maximizer_and_loses(self) -> None:
         self.__check_reward(
-            player_turn=chess.BLACK, 
+            maximizer=chess.BLACK, 
             board_fen=WINNING_BOARD_FOR_WHITE,
             player_wins=False,
             player_loses=True,
@@ -124,7 +135,7 @@ class TestMinimaxChessPlayer:
         
     def test_check_terminal_state_returns_no_reward_if_max_depth_reached(self) -> None:
         self.__check_reward(
-            player_turn=chess.BLACK, 
+            maximizer=chess.BLACK, 
             board_fen=NOT_WINNING_BOARD,
             player_wins=False,
             player_loses=False,
@@ -133,7 +144,7 @@ class TestMinimaxChessPlayer:
         
     def test_none_returned_if_not_terminal_state(self) -> None:
         self.__check_reward(
-            player_turn=chess.BLACK, 
+            maximizer=chess.BLACK, 
             board_fen=NOT_WINNING_BOARD,
             player_wins=False,
             player_loses=False,
