@@ -15,7 +15,7 @@ class Heuristics:
     def __init__(self, list_of_heuristics: list(Heuristic) ):
         self.List_of_Heuristics: list(Heuristic) = list_of_heuristics
 
-    def return_heuristic_value(self, board: Board):
+    def return_heuristic_value(self, board: Board) -> int:
         matrix_board = self.create_matrix_from_board(board)
         heuristic_value: int = 0
         for heuristic in self.List_of_Heuristics: 
@@ -35,7 +35,7 @@ class Heuristics:
 
 
 
-    def number_of_pieces_greater_than_opponent(self, board: List):
+    def number_of_pieces_greater_than_opponent(self, board: List) -> int:
         # Takes the number of pawns and queens of the Player and subtracts the opponents pieces
         number_of_pawns: int = len(board.pieces(chess.PAWN, chess.WHITE)) * 1
         number_of_queens: int = len(board.pieces(chess.QUEEN, chess.WHITE)) * 100
@@ -45,7 +45,7 @@ class Heuristics:
         return ((number_of_pawns + number_of_queens) - (number_of_opponent_pawns + number_of_opponent_queens))
 
 
-    def create_matrix_from_board(self, board: Board):
+    def create_matrix_from_board(self, board: Board) -> int:
         epd: str = board.epd() 
         pieces = epd.split(" ", 1)[0] 
         rows = pieces.split("/")
@@ -64,7 +64,7 @@ class Heuristics:
             final_board.append(current_row)
         return final_board
 
-    def pawn_chain_support(self, matrix_board: List): 
+    def pawn_chain_support(self, matrix_board: List) -> int: 
         heuristic_value = 0
         for counter, row in enumerate(matrix_board):
             if(counter == 0): 
@@ -77,7 +77,7 @@ class Heuristics:
                         heuristic_value += 1
         return heuristic_value
 
-    def pawn_side_by_side_support(self, matrix_board: List):
+    def pawn_side_by_side_support(self, matrix_board: List) -> int:
         heuristic_value = 0
         for counter, row in enumerate(matrix_board):
             for element, square in enumerate(row):
@@ -88,7 +88,7 @@ class Heuristics:
                         heuristic_value += 1
         return heuristic_value
 
-    def distance_from_opposite_side_of_board(self, matrix_board: List):
+    def distance_from_opposite_side_of_board(self, matrix_board: List) -> int:
         heuristic_value = 0
         length_of_board = len(matrix_board)
         for counter, row in enumerate(matrix_board):
@@ -99,7 +99,7 @@ class Heuristics:
                     heuristic_value += (length_of_board - counter - 2) 
         return heuristic_value * 5
 
-    def number_of_stacked_pawns(self, matrix_board: List):
+    def number_of_stacked_pawns(self, matrix_board: List) -> int:
         heuristic_value = 0
         for counter, row in enumerate(matrix_board):
             if(counter == 0): # skip the back row since there will be no pawns behind them 
@@ -110,7 +110,7 @@ class Heuristics:
                         heuristic_value -= 1
         return heuristic_value
 
-    def is_piece_at_risk(self, matrix_board: List):
+    def is_piece_at_risk(self, matrix_board: List) -> int:
         heuristic_value: int = 0
         for counter, row in enumerate(matrix_board):
             if(counter == 0): # skip the back row since there will be no pawns behind them 

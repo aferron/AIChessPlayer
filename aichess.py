@@ -21,20 +21,23 @@ class Results:
             "number iterations:" + str(self.iterations) + '\n'
 
 class AIChess:
-    def __init__(self, iterations: int, baseline: ChessPlayer, testplayers: array, visual: bool=False, verbose: bool=False) -> None:
+    def __init__(self, iterations: int, baselines: ChessPlayer, testplayers: array, visual: bool=False, verbose: bool=False) -> None:
         self.__iterations: int = iterations
         self.__visual: bool = visual
         self.__verbose: bool = verbose
-        self.__results: array = []
-        self.__baseline: ChessPlayer = baseline
+        self.__results: array[array[Results]] = []
+        self.__baselines: array[ChessPlayer] = baselines
         self.__testplayers: array[ChessPlayer] = testplayers
 
-    def run(self) -> array:
-        for (player, opponent) in zip(self.__testplayers, self.__baseline):
-                self.__run_one_set_of_opponents(player1=player, player2=opponent)
+    def run(self) -> array[array[Results]]:
+        counter: int = 0
+        for baseline in self.__baselines:
+            for player in self.__testplayers:
+                self.__run_one_set_of_opponents(player1=player, player2=baseline, current_index=counter)
+            counter += counter + 1
         return self.__results
 
-    def __run_one_set_of_opponents(self, player1: ChessPlayer, player2: ChessPlayer) -> None:
+    def __run_one_set_of_opponents(self, player1: ChessPlayer, player2: ChessPlayer, current_index: int) -> None:
         player1_wins = 0
         draws = 0
         for i in tqdm(range(self.__iterations)):
@@ -52,11 +55,14 @@ class AIChess:
             # If winner is True, white won (player1)
             elif winner:
                 player1_wins += 1
-
+        
         percent_wins_player1 = player1_wins / self.__iterations
         percent_draws = draws / self.__iterations
         percent_wins_player2 = 1 - (percent_wins_player1 + percent_draws)
-        self.__results.append(
+        print(percent_wins_player1, percent_wins_player2)
+        if(len(self.__results) != current_index + 1):
+            self.__results.append([])
+        self.__results[current_index].append(
             Results(
                 player1.get_name(),
                 player2.get_name(),
