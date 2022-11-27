@@ -34,7 +34,7 @@ class AIChess:
         for baseline in self.__baselines:
             for player in self.__testplayers:
                 self.__run_one_set_of_opponents(player1=player, player2=baseline, current_index=counter)
-            counter += counter + 1
+            counter += 1
         return self.__results
 
     def __run_one_set_of_opponents(self, player1: ChessPlayer, player2: ChessPlayer, current_index: int) -> None:
