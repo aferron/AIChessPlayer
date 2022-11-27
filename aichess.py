@@ -59,7 +59,6 @@ class AIChess:
         percent_wins_player1 = player1_wins / self.__iterations
         percent_draws = draws / self.__iterations
         percent_wins_player2 = 1 - (percent_wins_player1 + percent_draws)
-        print(percent_wins_player1, percent_wins_player2)
         if(len(self.__results) != current_index + 1):
             self.__results.append([])
         self.__results[current_index].append(
