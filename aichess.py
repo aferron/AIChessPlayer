@@ -29,7 +29,7 @@ class AIChess:
         self.__baselines: array[ChessPlayer] = baselines
         self.__testplayers: array[ChessPlayer] = testplayers
 
-    def run(self):
+    def run(self) -> array:
         counter: int = 0
         for baseline in self.__baselines:
             for player in self.__testplayers:
