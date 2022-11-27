@@ -3,6 +3,7 @@ from aichessboard import AIChessBoard
 import chess
 from chess import Move
 from chessplayer import ChessPlayer
+from heuristics import Heuristic, Heuristics
 from dataclasses import dataclass, field
 from enum import Enum
 import numpy as np
@@ -54,9 +55,10 @@ class Node:
         return self.reward_if_taking_best_move == other.reward_if_taking_best_move
 
 class MinimaxPlayer(ChessPlayer):
-    def __init__(self, depth: int) -> None:
+    def __init__(self, depth: int, heuristics: list(Heuristic)) -> None:
         self.depth = depth
-        self.__name = self.__class__.__name__ + " (depth:" + str(depth) + ")"
+        self.heuristic_calculator = Heuristics(heuristics)
+        self.__name = self.__class__.__name__ + " (depth " + str(depth) + ")"
 
     def get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board=board, depth=self.depth)
@@ -157,8 +159,10 @@ class MinimaxPlayer(ChessPlayer):
 
 
     def calc_reward(self,board: AIChessBoard) -> int:
-        # Integrate heuristics
-        return WinReward.DRAW.value
+        heuristic_value = self.heuristic_calculator.return_heuristic_value(board)
+        # print(heuristic_value)
+        return heuristic_value
+
 
 
     def white_wins(self, board: AIChessBoard) -> bool:
