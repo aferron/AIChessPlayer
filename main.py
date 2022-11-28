@@ -1,9 +1,10 @@
 from aichess import AIChess, Results
 from chessplayer import ChessPlayer
-from randomchessplayer import RandomChessPlayer
-import numpy as np
+from heuristics import Heuristic
 import matplotlib.pyplot as plt
+import numpy as np
 from minimaxchessplayer import MinimaxPlayer
+from randomchessplayer import RandomChessPlayer
 from typing import List
 
 class Main:
@@ -16,7 +17,8 @@ class Main:
         losses: list[int], 
         draws: list[int]
     ):
-        title = 'Baseline: ' + baseline.get_name() + '\n' + str(iterations) + ' iterations per run'
+        title = 'Baseline: ' + baseline.get_name() + '\n' + str(iterations) + \
+            ' iterations per run'
         labels = [player.get_name() for player in testplayers]
         x = np.arange(len(labels))
         width = .15
@@ -30,7 +32,7 @@ class Main:
         rects2 = ax.bar(r2, losses, width, label='Baseline Wins')
         rects3 = ax.bar(r3, draws, width, label='Draws')
 
-        ax.set_ylabel('Percent Wins for Test Player')
+        ax.set_ylabel('Percent Wins or Draws')
         ax.set_xlabel('Player Type')
         ax.set_title(title)
         ax.set_xticks(x, labels)
@@ -42,19 +44,46 @@ class Main:
         fig.tight_layout()
         plt.savefig('charts/' + title)
         plt.show()
+
+    def __append_as_percent(self, results_by_type: np.array[float], percent: float) -> None:
+        results_by_type.append(np.round(percent, 2) * 100)
     
     def run(self):
         num_iterations = 50
-        depth_iterations = [1, 2]
-        wins, losses, draws = np.empty(len(depth_iterations)), np.empty(len(depth_iterations)), np.empty(len(depth_iterations))
-        baseline = RandomChessPlayer()
-        testplayers: List[ChessPlayer] = [MinimaxPlayer(depth=depth) for depth in depth_iterations]
-        test_results: List[Results] = AIChess(iterations=num_iterations, baseline=baseline, testplayers=testplayers).run()
-        for i, depth_test in enumerate(test_results):
-            temp_wins, temp_losses, temp_draws = depth_test.percent_wins_player1, depth_test.percent_wins_player2, depth_test.percent_draws
-            wins[i] = np.round(temp_wins, 2) * 100
-            losses[i] = np.round(temp_losses, 2) * 100
-            draws[i] = np.round(temp_draws, 2) * 100
-        self.__plot_results(baseline, testplayers, num_iterations, wins, losses, draws)
+        depth_iterations = [1, 2, 3]
+        baselines =  [
+            MinimaxPlayer(
+                depth=depth, 
+                heuristics=[
+                    Heuristic.Distance_From_Starting_Location, 
+                    Heuristic.Maximize_Number_Of_Pieces
+                ]
+            ) for depth in depth_iterations
+        ]
+        testplayers = [
+            MinimaxPlayer(
+                depth=depth, 
+                heuristics=[
+                    Heuristic.Piece_Could_Be_Captured, 
+                    Heuristic.Distance_From_Starting_Location, 
+                    Heuristic.Keep_Pawns_Diagonally_Supported, 
+                    Heuristic.Stacked_Pawns, 
+                    Heuristic.Maximize_Number_Of_Pieces
+                ]
+            ) for depth in depth_iterations
+        ]
+        test_results: List[List[Results]] = AIChess(iterations=num_iterations, baselines=baselines, testplayers=testplayers).run()
+        for results_per_baseline in enumerate(test_results):
+            test_player_wins, baseline_wins, draws = [], [], []
+            for results in results_per_baseline:
+                # test_player_win_percent, baseline_win_percent, draw_percent = results.percent_wins_player1, results.percent_wins_player2, results.percent_draws
+                self.__append_as_percent(results_by_type=test_player_wins, percent=results.percent_wins_player1)
+                self.__append_as_percent(results_by_type=baseline_wins, percent=results.percent_wins_player2)
+                self.__append_as_percent(results_by_type=draws, percent=results.percent_draws)
+                
+                # test_player_wins.append(np.round(temp_wins, 2) * 100)
+                # baseline_wins.append( np.round(temp_losses, 2) * 100)
+                # draws.append( np.round(temp_draws, 2) * 100)
+            self.__plot_results(results_per_baseline, testplayers, num_iterations, test_player_wins, baseline_wins, draws)
 
 Main().run()
