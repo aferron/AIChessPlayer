@@ -87,7 +87,8 @@ class MinimaxPlayer(ChessPlayer):
     def pre_order(self, root_board: AIChessBoard, current: Node, depth: int) -> Node:
 
         early_exit_reward = self.check_terminal_state(
-            root=current, 
+            root=current,
+            root_board= root_board, 
             depth=depth, 
             maximizer=root_board.turn
         )
@@ -102,7 +103,7 @@ class MinimaxPlayer(ChessPlayer):
             return current
 
         # Unpack each move to see the states
-        children: np.array(Node) = self.unpack(root=current)
+        children: np.array(Node) = self.unpack(root=current, true_root=root_board)
         # Check if no viable moves are left in this path
         if children.size == 0: 
             current.reward_if_taking_best_move = WinReward.DRAW.value
@@ -134,7 +135,7 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Unpack nodes into their child states
-    def unpack(self,root: Node) -> np.array(Node):
+    def unpack(self,root: Node, true_root: Node) -> np.array(Node):
         base_board: AIChessBoard = root.board
         legalmoves = np.array(list(root.board.legal_moves))
         nodes = np.empty(len(legalmoves), dtype=Move)
@@ -144,7 +145,7 @@ class MinimaxPlayer(ChessPlayer):
             # this takes the place of current.board.turn = minimax in pre_order
             # push changes the board turn so this shouldn't be necessary
             board.turn = not base_board.turn
-            reward = self.calc_reward(board)
+            reward = self.calc_reward(board, true_root)
             nodes[i] = Node(
                 reward_if_taking_best_move=reward,
                 board=board, 
@@ -158,8 +159,8 @@ class MinimaxPlayer(ChessPlayer):
         return nodes
 
 
-    def calc_reward(self,board: AIChessBoard) -> int:
-        heuristic_value = self.heuristic_calculator.return_heuristic_value(board)
+    def calc_reward(self,board: AIChessBoard, root_board: Node) -> int:
+        heuristic_value = self.heuristic_calculator.return_heuristic_value(board, root_board.turn)
         # print(heuristic_value)
         return heuristic_value
 
@@ -174,13 +175,13 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Check if the state is an end state and return rewards if so
-    def check_terminal_state(self, root: Node, depth: int, maximizer: chess.Color) -> int:
+    def check_terminal_state(self, root: Node, root_board: Node, depth: int, maximizer: chess.Color) -> int:
         if self.white_wins(root.board):
             return WinReward.WIN.value if maximizer == chess.WHITE else WinReward.LOSS.value
         elif self.black_wins(root.board):
             return WinReward.WIN.value if maximizer == chess.BLACK else WinReward.LOSS.value
         elif depth <= 0:
-            return self.calc_reward(root.board)
+            return self.calc_reward(root.board, root_board)
         else:
             return None
 
