@@ -53,8 +53,8 @@ class Heuristics:
 
     def create_matrix_from_board(self, board: Board, player_color: chess.Color) -> int:
          # Get black and white pieces.
-        white = self.int_to_array(board.occupied_co[0], 'white')
-        black = self.int_to_array(board.occupied_co[1], 'black')
+        white = self.int_to_array(board.occupied_co[1], 'white')
+        black = self.int_to_array(board.occupied_co[0], 'black')
         # Combine them with a mask.
         white[np.where(black is PLAYER_BLACK)] = PLAYER_BLACK
         mask = (white == ".")
@@ -70,7 +70,7 @@ class Heuristics:
         padding = ["."] * length
         binary = (*padding, *binary) # appending this way requires python >= 3.5
         board_array = np.reshape(binary, (8,8))
-        return np.flip(board_array, axis=0)
+        return np.flip(board_array, axis=1)
 
     def pawn_chain_support(self, matrix_board: List, player_color: chess.Color) -> int: 
         heuristic_value = 0
