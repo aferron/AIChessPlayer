@@ -58,8 +58,8 @@ class MinimaxPlayer(ChessPlayer):
     def __init__(self, depth: int, heuristics: list(Heuristic)) -> None:
         self.depth = depth
         self.heuristic_calculator = Heuristics(heuristics)
-        self.__name = self.__class__.__name__ + "\n(depth:" + str(depth) + \
-            "heuristics:" + heuristics + ")"
+        self.__name = self.__class__.__name__ + "\n(depth: " + str(depth) + \
+            ";\n heuristics: " + str(self.heuristic_calculator) + ")"
 
     def get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board=board, depth=self.depth)
