@@ -2,9 +2,10 @@ from aichessboard import AIChessBoard
 import chess
 from chess import Move
 from chessplayer import ChessPlayer
-from minimaxchessplayer import MinimaxPlayer, Node, MAX_DEFAULT, MIN_DEFAULT
+from minimaxchessplayer import MinimaxPlayer, Node, ALPHA_DEFAULT, BETA_DEFAULT
 import numpy as np
 import pytest
+from heuristics import Heuristic, Heuristics
 
 WINNING_BOARD_FOR_WHITE = 'P7/1ppppppp/8/8/8/8/1PPPPPPP/8'
 WINNING_BOARD_FOR_BLACK = '8/1ppppppp/8/8/8/8/1PPPPPPP/p7'
@@ -20,8 +21,8 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=move,
             best_move_from_board=None,
             win_status=1, 
-            min=0, 
-            max=0, 
+            alpha=0,
+            beta=0,
             parent=None
         )
         assert node.reward_if_taking_best_move == 1
@@ -35,8 +36,8 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=move,
             best_move_from_board=None,
             win_status=1, 
-            min=0, 
-            max=0, 
+            alpha=0,
+            beta=0,
             parent=None
         )
         node2 = node1.copy()
@@ -51,8 +52,8 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=move,
             best_move_from_board=None,
             win_status=1, 
-            min=0, 
-            max=0, 
+            alpha=0,
+            beta=0,
             parent=None
         )
         node2 = node1.copy()
@@ -61,38 +62,39 @@ class TestMinimaxChessPlayer:
 
     def test_white_wins_when_white_is_on_back_row(self) -> None:
         board = AIChessBoard(WINNING_BOARD_FOR_WHITE)
-        minimaxplayer = MinimaxPlayer(depth=1)
+        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.white_wins(board=board) == True
 
     def test_white_wins_is_false_when_white_is_not_on_back_row(self) -> None:
         board = AIChessBoard(NOT_WINNING_BOARD)
-        minimaxplayer = MinimaxPlayer(depth=1)
+        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.white_wins(board=board) == False
 
     def test_black_wins_when_black_is_on_back_row(self) -> None:
         board = AIChessBoard(WINNING_BOARD_FOR_BLACK)
-        minimaxplayer = MinimaxPlayer(depth=1)
+        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.black_wins(board=board) == True
 
     def test_black_wins_is_false_when_black_is_not_on_back_row(self) -> None:
         board = AIChessBoard(NOT_WINNING_BOARD)
-        minimaxplayer = MinimaxPlayer(depth=1)
+        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.black_wins(board=board) == False
 
     def test_unpack_gives_an_array_of_nodes_with_legal_moves(self) -> None:
         board = AIChessBoard(NOT_WINNING_BOARD)
-        minimaxplayer = MinimaxPlayer(depth=1)
+        minimaxplayer = MinimaxPlayer(depth=1, heuristics=[Heuristic], run_alpha_beta=False)
         root = Node(
             reward_if_taking_best_move=0,
             board=board,
             move_that_generated_this_board=None,
             best_move_from_board=None,
             win_status=None,
-            min=0,
-            max=0,
+            alpha=0,
+            beta=0,
             parent=None
         )
-        unpacked_moves = {node.move_that_generated_this_board for node in minimaxplayer.unpack(root=root)}
+        unpacked_moves = {node.move_that_generated_this_board
+                          for node in minimaxplayer.unpack(true_root_board=board, root=root, depth=1)}
 
         assert unpacked_moves == set(board.legal_moves)
 
@@ -112,11 +114,11 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=None,
             best_move_from_board=None,
             win_status=None,
-            min=0,
-            max=0,
+            alpha=0,
+            beta=0,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=1)
+        minimaxplayer = MinimaxPlayer(depth=1, heuristics=[Heuristic], run_alpha_beta=False)
         result_reward = minimaxplayer.check_terminal_state(
             root=root, 
             depth=0 if max_depth_reached else 1,
@@ -197,11 +199,11 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=None,
             best_move_from_board=None,
             win_status=None,
-            max=MAX_DEFAULT,
-            min=MIN_DEFAULT,
+            alpha=ALPHA_DEFAULT,
+            beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3)
+        minimaxplayer = MinimaxPlayer(depth=3, heuristics=[Heuristic], run_alpha_beta=False)
         result = minimaxplayer.pre_order(root_board=board, current=node, depth=minimaxplayer.depth)
         assert result.best_move_from_board == best_move
         
@@ -214,11 +216,11 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=None,
             best_move_from_board=None,
             win_status=None,
-            max=MAX_DEFAULT,
-            min=MIN_DEFAULT,
+            alpha=ALPHA_DEFAULT,
+            beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3)
+        minimaxplayer = MinimaxPlayer(depth=3, heuristics=None, run_alpha_beta=False)
         with pytest.raises(ChessPlayer.ChessPlayerException):
             minimaxplayer.get_next_move(board=board)
         
@@ -233,11 +235,11 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=None,
             best_move_from_board=None,
             win_status=None,
-            max=MAX_DEFAULT,
-            min=MIN_DEFAULT,
+            alpha=ALPHA_DEFAULT,
+            beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3)
+        minimaxplayer = MinimaxPlayer(depth=3, heuristics=[Heuristic], run_alpha_beta=False)
         result = minimaxplayer.get_next_move(board=board)
         assert result == best_move
 
@@ -251,10 +253,65 @@ class TestMinimaxChessPlayer:
             move_that_generated_this_board=None,
             best_move_from_board=None,
             win_status=None,
-            max=MAX_DEFAULT,
-            min=MIN_DEFAULT,
+            alpha=ALPHA_DEFAULT,
+            beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3)
+        minimaxplayer = MinimaxPlayer(depth=3, heuristics=[0], run_alpha_beta=False)
         result = minimaxplayer.get_next_move(board=board)
         assert result == best_move
+
+    def test_maximizer_is_correct_for_alpha_beta_pruning(self):
+        board = AIChessBoard(NOT_WINNING_BOARD)
+        root = Node(
+            reward_if_taking_best_move=0,
+            board=board,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
+            win_status=None,
+            alpha=ALPHA_DEFAULT,
+            beta=BETA_DEFAULT,
+            parent=None
+        )
+        maximizer = True if (root.board.turn == chess.WHITE) else False
+        minimizer = True if (root.board.turn != chess.WHITE) else False
+        assert maximizer is True and minimizer is False
+
+    def test_alpha_beta_pruning_returns_pruned_array_of_legal_moves(self) -> None:
+        board = AIChessBoard(NOT_WINNING_BOARD)
+        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
+        root = Node(
+            reward_if_taking_best_move=0,
+            board=board,
+            move_that_generated_this_board=None,
+            best_move_from_board=None,
+            win_status=None,
+            alpha=ALPHA_DEFAULT,
+            beta=BETA_DEFAULT,
+            parent=None
+        )
+        legalmoves = np.array(list(root.board.legal_moves))
+        nodes = np.empty(len(legalmoves), dtype=Move)
+        base_board: AIChessBoard = root.board
+        new_board = base_board.copy()
+        new_board.push(legalmoves[0])
+        new_board.turn = not base_board.turn
+
+        nodes[0] = Node(
+            reward_if_taking_best_move=0,
+            board=board,
+            move_that_generated_this_board=legalmoves[0],
+            best_move_from_board=None,
+            win_status=None,  # taken care of by recursive call
+            alpha=root.alpha,
+            beta=root.beta,
+            parent=root
+        )
+
+        alpha_beta_moves = {node.move_that_generated_this_board for node in minimaxplayer.alpha_beta_pruning(
+            maximizer=False,
+            value=root.alpha,
+            children=nodes,
+            child=0)}
+
+        assert alpha_beta_moves < set(board.legal_moves)

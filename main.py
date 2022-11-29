@@ -6,11 +6,11 @@ from minimaxchessplayer import MinimaxPlayer
 from heuristics import Heuristic
 
 # Testing
-num_iterations = 50
+num_iterations = 1
 depth_iterations = [1, 2, 3]
 wins, losses, draws = [], [], []
-baselines =  [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces]) for depth in depth_iterations]
-testplayers = [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Piece_Could_Be_Captured, Heuristic.Distance_From_Starting_Location, Heuristic.Keep_Pawns_Diagonally_Supported, Heuristic.Stacked_Pawns, Heuristic.Maximize_Number_Of_Pieces]) for depth in depth_iterations]
+baselines =  [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces], run_alpha_beta=True) for depth in depth_iterations]
+testplayers = [MinimaxPlayer(depth=depth, heuristics=[Heuristic.Piece_Could_Be_Captured, Heuristic.Distance_From_Starting_Location, Heuristic.Keep_Pawns_Diagonally_Supported, Heuristic.Stacked_Pawns, Heuristic.Maximize_Number_Of_Pieces], run_alpha_beta=True) for depth in depth_iterations]
 test_results = AIChess(iterations=num_iterations, baselines=baselines, testplayers=testplayers).run()
 for i, depth_tests in enumerate(test_results):
     wins.append([]), losses.append([]), draws.append([])
@@ -54,5 +54,5 @@ for (win, loss, draw, baseline) in zip(wins, losses, draws, baselines):
     ax.bar_label(rects2, padding=3)
     ax.bar_label(rects3, padding=3)
     fig.tight_layout()
-    plt.savefig('charts/' + title)
+#    plt.savefig('charts/' + title)
     plt.show()
