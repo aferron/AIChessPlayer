@@ -4,8 +4,8 @@ from enum import Enum
 import numpy as np
 
 # Using global variables to avoid chess library calls.
-PLAYER_WHITE = True
-PLAYER_BLACK = False
+PLAYER_WHITE = chess.WHITE
+PLAYER_BLACK = chess.BLACK
 BOARD_SIZE = 64
 
 class Heuristic(Enum):
