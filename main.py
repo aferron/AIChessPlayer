@@ -9,8 +9,6 @@ from typing import List
 
 class Main:
     def run(self) -> None:
-        # self.__run_heuristics_ablation_study()
-        # self.__run_heuristics_by_depth_experiments()
         self.__run_minimax_with_heuristics_vs_random()
 
     def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer]) -> None:
