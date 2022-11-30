@@ -21,6 +21,14 @@ class Heuristics:
     def __init__(self, list_of_heuristics: list(Heuristic) ):
         self.List_of_Heuristics: list(Heuristic) = list_of_heuristics
 
+    def __str__(self) -> str:
+        heuristics = ''
+        for heuristic in self.List_of_Heuristics:
+            heuristics += str(heuristic.value)
+            if heuristic is not self.List_of_Heuristics[-1]:
+                heuristics += ", "
+        return heuristics    
+
     def return_heuristic_value(self, board: Board, player_color: chess.Color) -> int:
         matrix_board = self.create_matrix_from_board(board, player_color)
         heuristic_value: int = 0
@@ -132,5 +140,3 @@ class Heuristics:
                         if(matrix_board[counter - 1][element + 1] == (not player_color)):
                             heuristic_value -= 20
         return heuristic_value
-
-
