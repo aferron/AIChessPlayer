@@ -143,12 +143,8 @@ class MinimaxPlayer(ChessPlayer):
         for i, move in enumerate(legalmoves):
             board = base_board.copy()
             board.push(move)
-            # this takes the place of current.board.turn = minimax in pre_order
-            # push changes the board turn so this shouldn't be necessary
-            board.turn = not base_board.turn
-            reward = self.calc_reward(board, true_root)
             nodes[i] = Node(
-                reward_if_taking_best_move=reward,
+                reward_if_taking_best_move=REWARD_DEFAULT,
                 board=board, 
                 move_that_generated_this_board=move,
                 best_move_from_board=None,
@@ -162,7 +158,6 @@ class MinimaxPlayer(ChessPlayer):
 
     def calc_reward(self,board: AIChessBoard, root_board: Node) -> int:
         heuristic_value = self.heuristic_calculator.return_heuristic_value(board, root_board.turn)
-        # print(heuristic_value)
         return heuristic_value
 
 

@@ -9,8 +9,7 @@ from typing import List
 
 class Main:
     def run(self) -> None:
-        # self.__run_heuristics_ablation_study()
-        self.__run_heuristics_by_depth_experiments()
+        self.__run_minimax_with_heuristics_vs_random()
 
     def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer]) -> None:
         test_results: List[List[Results]] = AIChess(iterations=iterations, baselines=baselines, testplayers=testplayers).run()
@@ -94,12 +93,18 @@ class Main:
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
     def __run_heuristics_ablation_study(self) -> None:
-        num_iterations = 1
-        depth = 1
+        num_iterations = 10
+        depth = 3
         all_heuristics = list(Heuristic)
         baselines =  [MinimaxPlayer(depth=depth, heuristics=[]), MinimaxPlayer(depth=depth, heuristics=all_heuristics)]
         testplayers = [MinimaxPlayer(depth=depth, heuristics=[heuristic]) for heuristic in all_heuristics] + \
             [MinimaxPlayer(depth=depth, heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index]) for index in range(len(all_heuristics))]
+        self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
+
+    def __run_minimax_with_heuristics_vs_random(self) -> None:
+        num_iterations = 100
+        baselines = [RandomChessPlayer()]
+        testplayers = [MinimaxPlayer(depth=depth, heuristics=list(Heuristic)) for depth in range(4)]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
 Main().run()
