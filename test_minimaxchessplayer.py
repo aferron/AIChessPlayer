@@ -94,7 +94,7 @@ class TestMinimaxChessPlayer:
             parent=None
         )
         unpacked_moves = {node.move_that_generated_this_board
-                          for node in minimaxplayer.unpack(true_root_board=board, root=root, depth=1)}
+                          for node in minimaxplayer.unpack(maximizer=board.turn, root=root, depth=1)}
 
         assert unpacked_moves == set(board.legal_moves)
 
@@ -277,6 +277,7 @@ class TestMinimaxChessPlayer:
         minimizer = True if (root.board.turn != chess.WHITE) else False
         assert maximizer is True and minimizer is False
 
+    # This test needs fixed...
     def test_alpha_beta_pruning_returns_pruned_array_of_legal_moves(self) -> None:
         board = AIChessBoard(NOT_WINNING_BOARD)
         minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
@@ -309,9 +310,9 @@ class TestMinimaxChessPlayer:
         )
 
         alpha_beta_moves = {node.move_that_generated_this_board for node in minimaxplayer.alpha_beta_pruning(
-            maximizer=False,
+            max_player=False,
             value=root.alpha,
             children=nodes,
-            child=0)}
+            child_index=0)}
 
         assert alpha_beta_moves < set(board.legal_moves)

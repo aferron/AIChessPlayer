@@ -105,7 +105,7 @@ class MinimaxPlayer(ChessPlayer):
             return current
 
         # Unpack each move to see the states
-        children: np.array(Node) = self.unpack(true_root_board=root_board, root=current, depth=depth)
+        children: np.array(Node) = self.unpack(maximizer=root_board.turn, root=current, depth=depth)
         # Check if no viable moves are left in this path
         if children.size == 0: 
             current.reward_if_taking_best_move = WinReward.DRAW.value
@@ -128,13 +128,12 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Unpack nodes into their child states
-    def unpack(self, true_root_board: AIChessBoard, root: Node, depth: int) -> np.array(Node):
+    def unpack(self, maximizer: chess.Color, root: Node, depth: int) -> np.array(Node):
         base_board: AIChessBoard = root.board
         legalmoves = np.array(list(root.board.legal_moves))
         nodes = np.empty(len(legalmoves), dtype=Move)
         # For alpha-beta-pruning
-        maximizer = True if (root.board.turn == true_root_board.turn) else False
-        value = ALPHA_DEFAULT if maximizer else BETA_DEFAULT
+        value = ALPHA_DEFAULT if root.board.turn == maximizer else BETA_DEFAULT
 
         for i, move in enumerate(legalmoves):
             board = base_board.copy()
@@ -160,39 +159,35 @@ class MinimaxPlayer(ChessPlayer):
                 terminal_state = self.check_terminal_state(
                     root=nodes[i],
                     depth=depth,
-                    maximizer=true_root_board.turn
+                    maximizer=maximizer
                 )
                 nodes[i].reward_if_taking_best_move = terminal_state if terminal_state is not None \
                     else reward
-                pruned_nodes = self.alpha_beta_pruning(maximizer=maximizer, value=value, children=nodes, child=i)
+                pruned_nodes = self.alpha_beta_pruning(max_player=maximizer, value=value, children=nodes, child_index=i)
 
                 if len(pruned_nodes) < len(nodes):
                     return pruned_nodes
-                else:
-                    nodes = pruned_nodes
-
         return nodes
 
-    @staticmethod
-    def alpha_beta_pruning(maximizer: bool, value: int, children: np.array(Node), child: int) -> np.array(Node):
+    def alpha_beta_pruning(self, max_player: chess.Color, value: int, children: np.array(Node), child_index: int) -> np.array(Node):
         # Max-player, Beta Pruning
-        if maximizer:
-            value = max(value, children[child].reward_if_taking_best_move)
-            if value >= children[child].parent.beta:
+        if max_player == children[child_index].parent.board.turn:
+            value = max(value, children[child_index].reward_if_taking_best_move)
+            if value >= children[child_index].parent.beta:
                 if None in children:
-                    children = np.array(children[:child + 1])
+                    children = np.array(children[:child_index + 1])
                 return children
             else:
-                children[child].parent.alpha = max(children[child].parent.alpha, value)
+                children[child_index].parent.alpha = max(children[child_index].parent.alpha, value)
         # Min-player, Alpha Pruning
-        elif not maximizer:
-            value = min(value, children[child].reward_if_taking_best_move)
-            if value <= children[child].parent.alpha:
+        else:
+            value = min(value, children[child_index].reward_if_taking_best_move)
+            if value <= children[child_index].parent.alpha:
                 if None in children:
-                    children = np.array(children[:child + 1])
+                    children = np.array(children[:child_index + 1])
                 return children
             else:
-                children[child].parent.beta = min(children[child].parent.beta, value)
+                children[child_index].parent.beta = min(children[child_index].parent.beta, value)
         return children
 
     def calc_reward(self,board: AIChessBoard) -> int:
