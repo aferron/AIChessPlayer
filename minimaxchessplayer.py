@@ -144,7 +144,7 @@ class MinimaxPlayer(ChessPlayer):
             board = base_board.copy()
             board.push(move)
             nodes[i] = Node(
-                reward_if_taking_best_move=0,
+                reward_if_taking_best_move=REWARD_DEFAULT,
                 board=board, 
                 move_that_generated_this_board=move,
                 best_move_from_board=None,
