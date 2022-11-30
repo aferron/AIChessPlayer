@@ -162,8 +162,9 @@ class MinimaxPlayer(ChessPlayer):
                 # Check if child is a leaf
                 terminal_state = self.check_terminal_state(
                     root=nodes[i],
+                    root_board=true_root,
                     depth=depth,
-                    maximizer=maximizer
+                    maximizer=maximizer,
                 )
                 nodes[i].reward_if_taking_best_move = terminal_state if terminal_state is not None \
                     else reward
