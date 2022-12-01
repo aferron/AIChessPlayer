@@ -5,8 +5,8 @@ import time
 
 class ChessPlayer(ABC):
 
-    def __init__(self, time: time) -> None:
-        self.__time = time
+    def __init__(self, timer: time) -> None:
+        self.__time = timer
         self.__name = self.__class__.__name__
         self.total_moves = 0
         self.average_time_to_get_move = 0
