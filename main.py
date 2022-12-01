@@ -73,8 +73,8 @@ class Main:
         plt.show()
 
     def __run_heuristics_by_depth_experiments(self) -> None:
-        num_iterations = 50
-        depth_iterations = [1, 2, 3]
+        num_iterations = 5
+        depth_iterations = [1, 2, ]
         baselines =  [MinimaxPlayer(
             depth=depth, 
             heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces],

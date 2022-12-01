@@ -2,10 +2,11 @@ from aichessboard import AIChessBoard
 import chess
 from chess import Move
 from chessplayer import ChessPlayer
+from heuristics import Heuristic, Heuristics
 from minimaxchessplayer import MinimaxPlayer, Node, ALPHA_DEFAULT, BETA_DEFAULT
 import numpy as np
 import pytest
-from heuristics import Heuristic, Heuristics
+import time
 
 WINNING_BOARD_FOR_WHITE = 'P7/1ppppppp/8/8/8/8/1PPPPPPP/8'
 WINNING_BOARD_FOR_BLACK = '8/1ppppppp/8/8/8/8/1PPPPPPP/p7'
@@ -62,27 +63,27 @@ class TestMinimaxChessPlayer:
 
     def test_white_wins_when_white_is_on_back_row(self) -> None:
         board = AIChessBoard(WINNING_BOARD_FOR_WHITE)
-        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.white_wins(board=board) == True
 
     def test_white_wins_is_false_when_white_is_not_on_back_row(self) -> None:
         board = AIChessBoard(NOT_WINNING_BOARD)
-        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.white_wins(board=board) == False
 
     def test_black_wins_when_black_is_on_back_row(self) -> None:
         board = AIChessBoard(WINNING_BOARD_FOR_BLACK)
-        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.black_wins(board=board) == True
 
     def test_black_wins_is_false_when_black_is_not_on_back_row(self) -> None:
         board = AIChessBoard(NOT_WINNING_BOARD)
-        minimaxplayer = MinimaxPlayer(depth=1, heuristics=None, run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=1, heuristics=None, run_alpha_beta=False)
         assert minimaxplayer.black_wins(board=board) == False
 
     def test_unpack_gives_an_array_of_nodes_with_legal_moves(self) -> None:
         board = AIChessBoard(NOT_WINNING_BOARD)
-        minimaxplayer = MinimaxPlayer(depth=1, heuristics=[Heuristic], run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=1, heuristics=[Heuristic], run_alpha_beta=False)
         root = Node(
             reward_if_taking_best_move=0,
             board=board,
@@ -118,7 +119,7 @@ class TestMinimaxChessPlayer:
             beta=0,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=1, heuristics=[Heuristic], run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=1, heuristics=[Heuristic], run_alpha_beta=False)
         result_reward = minimaxplayer.check_terminal_state(
             root=root, 
             depth=0 if max_depth_reached else 1,
@@ -203,7 +204,7 @@ class TestMinimaxChessPlayer:
             beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3, heuristics=[Heuristic], run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=3, heuristics=[Heuristic], run_alpha_beta=False)
         result = minimaxplayer.pre_order(root_board=board, current=node, depth=minimaxplayer.depth)
         assert result.best_move_from_board == best_move
         
@@ -220,9 +221,9 @@ class TestMinimaxChessPlayer:
             beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3, heuristics=None, run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=3, heuristics=None, run_alpha_beta=False)
         with pytest.raises(ChessPlayer.ChessPlayerException):
-            minimaxplayer.get_next_move(board=board)
+            minimaxplayer.__get_next_move(board=board)
         
     def test_get_next_move_returns_best_move(self) -> None:
         board_fen = '8/1p1p4/8/8/8/5p2/1P1P4/8'
@@ -239,7 +240,7 @@ class TestMinimaxChessPlayer:
             beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3, heuristics=[Heuristic], run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=3, heuristics=[Heuristic], run_alpha_beta=False)
         result = minimaxplayer.get_next_move(board=board)
         assert result == best_move
 
@@ -257,7 +258,7 @@ class TestMinimaxChessPlayer:
             beta=BETA_DEFAULT,
             parent=None
         )
-        minimaxplayer = MinimaxPlayer(depth=3, heuristics=[0], run_alpha_beta=False)
+        minimaxplayer = MinimaxPlayer(time, depth=3, heuristics=[0], run_alpha_beta=False)
         result = minimaxplayer.get_next_move(board=board)
         assert result == best_move
 
