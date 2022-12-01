@@ -2,6 +2,7 @@ import chess
 from chess import *
 from enum import Enum
 import numpy as np
+from typing import List
 
 # Using global variables to avoid chess library calls.
 PLAYER_WHITE = chess.WHITE
@@ -18,21 +19,21 @@ class Heuristic(Enum):
 
 
 class Heuristics: 
-    def __init__(self, list_of_heuristics: list(Heuristic) ):
-        self.List_of_Heuristics: list(Heuristic) = list_of_heuristics
+    def __init__(self, list_of_heuristics: List[Heuristic]):
+        self.list_of_heuristics: List[Heuristic] = list_of_heuristics
 
     def __str__(self) -> str:
         heuristics = ''
-        for heuristic in self.List_of_Heuristics:
+        for heuristic in self.list_of_heuristics:
             heuristics += str(heuristic.value)
-            if heuristic is not self.List_of_Heuristics[-1]:
+            if heuristic is not self.list_of_heuristics[-1]:
                 heuristics += ", "
-        return heuristics    
+        return heuristics
 
     def return_heuristic_value(self, board: Board, player_color: chess.Color) -> int:
         matrix_board = self.create_matrix_from_board(board, player_color)
         heuristic_value: int = 0
-        for heuristic in self.List_of_Heuristics: 
+        for heuristic in self.list_of_heuristics: 
                 if heuristic == Heuristic.Maximize_Number_Of_Pieces:
                     heuristic_value += self.number_of_pieces_greater_than_opponent(board, player_color)
                 elif heuristic == Heuristic.Keep_Pawns_Diagonally_Supported:

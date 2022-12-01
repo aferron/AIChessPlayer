@@ -3,11 +3,12 @@ from aichessboard import AIChessBoard
 import chess
 from chess import Move
 from chessplayer import ChessPlayer
-from heuristics import Heuristic, Heuristics
 from dataclasses import dataclass, field
 from enum import Enum
-import numpy as np
+from heuristics import Heuristic, Heuristics
 import math
+import numpy as np
+from typing import Any
 
 REWARD_DEFAULT = 0
 ALPHA_DEFAULT = -math.inf
@@ -56,15 +57,22 @@ class Node:
         return self.reward_if_taking_best_move == other.reward_if_taking_best_move
 
 class MinimaxPlayer(ChessPlayer):
-    def __init__(self, depth: int, heuristics: list(Heuristic), run_alpha_beta: bool) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        time: Any,
+        depth: int,
+        heuristics: list(Heuristic),
+        run_alpha_beta: bool
+    ) -> None:
+        super().__init__(time)
         self.depth = depth
         self.heuristic_calculator = Heuristics(heuristics)
         self.run_alpha_beta = run_alpha_beta
         self.__name = self.__class__.__name__ + "\n(depth: " + str(depth) + \
-            ";\n heuristics: " + str(self.heuristic_calculator) + ")"
+            ";\n heuristics: " + str(self.heuristic_calculator) + \
+                ";\n AB pruning:" + "on" if self.alpha_beta_pruning else "off" + ")"
 
-    def get_next_move(self, board: AIChessBoard) -> Move:
+    def _ChessPlayer__get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board=board, depth=self.depth)
 
     # Wrapper function for pre_order
@@ -91,8 +99,8 @@ class MinimaxPlayer(ChessPlayer):
     def pre_order(self, root_board: AIChessBoard, current: Node, depth: int) -> Node:
 
         early_exit_reward = self.check_terminal_state(
-            root=current,
-            root_board= root_board, 
+            current=current,
+            root_board=root_board, 
             depth=depth, 
             maximizer=root_board.turn
         )
@@ -158,14 +166,19 @@ class MinimaxPlayer(ChessPlayer):
             if self.run_alpha_beta:
                 # Check if child is a leaf
                 terminal_state = self.check_terminal_state(
-                    root=nodes[i],
+                    current=nodes[i],
                     root_board=true_root,
                     depth=depth,
                     maximizer=maximizer,
                 )
                 nodes[i].reward_if_taking_best_move = terminal_state if terminal_state is not None \
                     else REWARD_DEFAULT
-                is_pruned = self.alpha_beta_pruning(max_player=maximizer, value=value, children=nodes, child_index=i)
+                is_pruned = self.alpha_beta_pruning(
+                    max_player=maximizer,
+                    value=value,
+                    children=nodes,
+                    child_index=i
+                )
 
                 if is_pruned:
                     return np.array(nodes)
@@ -190,8 +203,8 @@ class MinimaxPlayer(ChessPlayer):
             children[child_index].parent.beta = min(children[child_index].parent.beta, value)
         return False
 
-    def calc_reward(self,board: AIChessBoard, root_board: Node) -> int:
-        heuristic_value = self.heuristic_calculator.return_heuristic_value(board, root_board.turn)
+    def calc_reward(self, current_board: AIChessBoard, root_board: AIChessBoard) -> int:
+        heuristic_value = self.heuristic_calculator.return_heuristic_value(current_board, root_board.turn)
         return heuristic_value
 
 
@@ -204,13 +217,13 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Check if the state is an end state and return rewards if so
-    def check_terminal_state(self, root: Node, root_board: Node, depth: int, maximizer: chess.Color) -> int:
-        if self.white_wins(root.board):
+    def check_terminal_state(self, current: Node, root_board: AIChessBoard, depth: int, maximizer: chess.Color) -> int:
+        if self.white_wins(current.board):
             return WinReward.WIN.value if maximizer == chess.WHITE else WinReward.LOSS.value
-        elif self.black_wins(root.board):
+        elif self.black_wins(current.board):
             return WinReward.WIN.value if maximizer == chess.BLACK else WinReward.LOSS.value
         elif depth <= 0:
-            return self.calc_reward(root.board, root_board)
+            return self.calc_reward(current.board, root_board)
         else:
             return None
 

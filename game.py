@@ -14,17 +14,6 @@ class Game:
         self.terminated = False
         self.winner: bool = None
 
-    # TODO: Remove this function unless it's needed
-    def __make_a_move(self, move_from: chess.Square, move_to: chess.Square) -> None:
-        self.board.push(Move(move_from, move_to))
-        if self.__visual:
-            print(self.board, "\n")
-        outcome = self.board.outcome()
-        if outcome != None:
-            self.terminated = True
-            if self.__verbose:
-                print("white" if outcome.winner else "black", " wins")
-
     def __make_a_move(self, move: Move) -> None:
         if move != None:
             self.board.push(move)

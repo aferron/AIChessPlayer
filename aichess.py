@@ -12,6 +12,9 @@ class Results:
     percent_wins_player1: float
     percent_wins_player2: float
     percent_draws: float
+    average_decision_time_player1: float
+    average_decision_time_player2: float
+    average_moves_per_game: float
     iterations: int
 
     def __str__(self) -> str:
@@ -40,6 +43,7 @@ class AIChess:
     def __run_one_set_of_opponents(self, player1: ChessPlayer, player2: ChessPlayer, current_index: int) -> None:
         player1_wins = 0
         draws = 0
+        total_moves = 0
         for i in tqdm(range(self.__iterations)):
             game = Game(
                 white=player1,
@@ -55,6 +59,8 @@ class AIChess:
             # If winner is True, white won (player1)
             elif winner:
                 player1_wins += 1
+
+            total_moves += game.player_white.total_moves + game.player_black.total_moves
         
         percent_wins_player1 = player1_wins / self.__iterations
         percent_draws = draws / self.__iterations
@@ -68,6 +74,9 @@ class AIChess:
                 percent_wins_player1,
                 percent_wins_player2,
                 percent_draws,
+                player1.average_time_to_get_move,
+                player2.average_time_to_get_move,
+                total_moves / self.__iterations,
                 self.__iterations
             )
         )
