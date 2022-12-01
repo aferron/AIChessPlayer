@@ -17,9 +17,10 @@ class ResultsPerMatchup:
 
 class Main:
     def run(self) -> None:
-        # self.__run_minimax_with_heuristics_vs_random()
+        # self.__run_heuristics_by_depth_experiments()
         # self.__run_heuristics_ablation_study()
-        self.__compare_runtimes_of_basic_configs()
+        self.__run_minimax_with_heuristics_vs_random()
+        # self.__compare_runtimes_of_basic_configs()
 
     def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer]) -> None:
         test_results: List[List[Results]] = AIChess(iterations=iterations, baselines=baselines, testplayers=testplayers).run()
@@ -167,7 +168,7 @@ class Main:
             depth=depth, 
             heuristics=list(Heuristic), 
             run_alpha_beta=True
-        ) for depth in range(3)]
+        ) for depth in range(4)]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
     def __compare_runtimes_of_basic_configs(self) -> None:
