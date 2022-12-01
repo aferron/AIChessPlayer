@@ -26,9 +26,9 @@ class Main:
             self.__plot_results(
                 baseline=baseline,
                 testplayers=testplayers,
-                iterations=iterations, 
-                wins=test_player_wins, 
-                losses=baseline_wins, 
+                iterations=iterations,
+                wins=test_player_wins,
+                losses=baseline_wins,
                 draws=draws
                 )
 
@@ -37,11 +37,11 @@ class Main:
 
     def __plot_results(
         self,
-        baseline: ChessPlayer, 
-        testplayers: List[ChessPlayer], 
-        iterations: int, 
-        wins: list[int], 
-        losses: list[int], 
+        baseline: ChessPlayer,
+        testplayers: List[ChessPlayer],
+        iterations: int,
+        wins: list[int],
+        losses: list[int],
         draws: list[int]
     ) -> None:
         title = 'Baseline: ' + baseline.get_name() + '\n' + str(iterations) + \
@@ -54,7 +54,7 @@ class Main:
         r2 = [x + width for x in r1]
         r3 = [x + width for x in r2]
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=((len(labels)*1.85),6))
         rects1 = ax.bar(r1, wins, width, label='Test Player Wins')
         rects2 = ax.bar(r2, losses, width, label='Baseline Wins')
         rects3 = ax.bar(r3, draws, width, label='Draws')
@@ -63,7 +63,7 @@ class Main:
         ax.set_xlabel('Player Type')
         ax.set_title(title)
         ax.set_xticks(x, labels)
-        ax.legend()
+        ax.legend(bbox_to_anchor=(.2,1.2,0,0))
 
         ax.bar_label(rects1, padding=3)
         ax.bar_label(rects2, padding=3)
@@ -76,18 +76,18 @@ class Main:
         num_iterations = 50
         depth_iterations = [1, 2, 3]
         baselines =  [MinimaxPlayer(
-            depth=depth, 
+            depth=depth,
             heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces],
             run_alpha_beta=True) \
                 for depth in depth_iterations]
         testplayers = [
             MinimaxPlayer(
-                depth=depth, 
+                depth=depth,
                 heuristics=[
-                    Heuristic.Piece_Could_Be_Captured, 
-                    Heuristic.Distance_From_Starting_Location, 
-                    Heuristic.Keep_Pawns_Diagonally_Supported, 
-                    Heuristic.Stacked_Pawns, 
+                    Heuristic.Piece_Could_Be_Captured,
+                    Heuristic.Distance_From_Starting_Location,
+                    Heuristic.Keep_Pawns_Diagonally_Supported,
+                    Heuristic.Stacked_Pawns,
                     Heuristic.Maximize_Number_Of_Pieces
                 ],
                 run_alpha_beta=True
