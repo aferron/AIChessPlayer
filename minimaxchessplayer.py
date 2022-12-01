@@ -173,15 +173,21 @@ class MinimaxPlayer(ChessPlayer):
         return np.array(nodes)
 
     def alpha_beta_pruning(self, max_player: chess.Color, value: int, children: np.array(Node), child_index: int) -> bool:
+        is_max_player = True if max_player == children[child_index].parent.board.turn else False
+
         value = max(value, children[child_index].reward_if_taking_best_move) \
-            if max_player == children[child_index].parent.board.turn \
-            else min(value, children[child_index].reward_if_taking_best_move)
+            if is_max_player else min(value, children[child_index].reward_if_taking_best_move)
 
-        if value >= children[child_index].parent.beta or value <= children[child_index].parent.alpha:
-            return True
-
-        children[child_index].parent.alpha = max(children[child_index].parent.alpha, value)
-        children[child_index].parent.beta = min(children[child_index].parent.beta, value)
+        # Do beta pruning only if maximizer
+        if is_max_player:
+            if value >= children[child_index].parent.beta:
+                return True
+            children[child_index].parent.alpha = max(children[child_index].parent.alpha, value)
+        # Do alpha pruning only if minimizer
+        else:
+            if value <= children[child_index].parent.alpha:
+                return True
+            children[child_index].parent.beta = min(children[child_index].parent.beta, value)
         return False
 
     def calc_reward(self,board: AIChessBoard, root_board: Node) -> int:

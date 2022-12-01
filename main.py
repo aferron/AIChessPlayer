@@ -9,7 +9,7 @@ from typing import List
 
 class Main:
     def run(self) -> None:
-        self.__run_minimax_with_heuristics_vs_random()
+        self.__run_heuristics_by_depth_experiments()
 
     def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer]) -> None:
         test_results: List[List[Results]] = AIChess(iterations=iterations, baselines=baselines, testplayers=testplayers).run()
