@@ -7,10 +7,11 @@ from heuristics import Heuristic, Heuristics
 from dataclasses import dataclass, field
 from enum import Enum
 import numpy as np
+import math
 
 REWARD_DEFAULT = 0
-MIN_DEFAULT = 99999
-MAX_DEFAULT = -99999
+ALPHA_DEFAULT = -math.inf
+BETA_DEFAULT = math.inf
 BACK_ROW_FOR_WHITE = 18374686479671623680
 BACK_ROW_FOR_BLACK = 255
 
@@ -33,8 +34,8 @@ class Node:
     move_that_generated_this_board: Move=field(compare=False)
     best_move_from_board: Move=field(compare=False)
     win_status:     WinStatus=field(compare=False) 
-    max:            int=field(compare=False)
-    min:            int=field(compare=False)
+    alpha:            int=field(compare=False)
+    beta:            int=field(compare=False)
     parent:         Node=field(compare=False)
 
     def copy(self) -> Node:
@@ -43,9 +44,9 @@ class Node:
             self.board, 
             self.move_that_generated_this_board,
             self.best_move_from_board,
-            self.win_status, 
-            self.min, 
-            self.max, 
+            self.win_status,
+            self.alpha,
+            self.beta,
             self.parent
         )
 
@@ -55,9 +56,11 @@ class Node:
         return self.reward_if_taking_best_move == other.reward_if_taking_best_move
 
 class MinimaxPlayer(ChessPlayer):
-    def __init__(self, depth: int, heuristics: list(Heuristic)) -> None:
+    def __init__(self, depth: int, heuristics: list(Heuristic), run_alpha_beta: bool) -> None:
+        super().__init__()
         self.depth = depth
         self.heuristic_calculator = Heuristics(heuristics)
+        self.run_alpha_beta = run_alpha_beta
         self.__name = self.__class__.__name__ + "\n(depth: " + str(depth) + \
             ";\n heuristics: " + str(self.heuristic_calculator) + ")"
 
@@ -73,8 +76,8 @@ class MinimaxPlayer(ChessPlayer):
             move_that_generated_this_board=None,
             best_move_from_board=None,
             win_status=None,
-            min=MIN_DEFAULT,
-            max=MAX_DEFAULT,
+            alpha=ALPHA_DEFAULT,
+            beta=BETA_DEFAULT,
             parent=None
         )
         solution_node = self.pre_order(root_board=board, current=root, depth=node_depth)
@@ -104,7 +107,8 @@ class MinimaxPlayer(ChessPlayer):
             return current
 
         # Unpack each move to see the states
-        children: np.array(Node) = self.unpack(root=current, true_root=root_board)
+        children: np.array(Node) = self.unpack(maximizer=root_board.turn, root=current, depth=depth, true_root=root_board)
+
         # Check if no viable moves are left in this path
         if children.size == 0: 
             current.reward_if_taking_best_move = WinReward.DRAW.value
@@ -113,15 +117,6 @@ class MinimaxPlayer(ChessPlayer):
         tree = []
         for child in children:
             child_node = self.pre_order(root_board=root_board, current=child, depth=depth - 1)
-            """
-            alpha beta pruning might go here - after opening
-            a node and getting the reward value the
-            loop can be broken. The lines below can be used.
-            # if child_node.reward > root.max:
-            #     root.max = child_node.reward
-            # if child_node.reward < root.min:
-            #     root.min = child_node.reward
-            """
             tree.append(child_node)
 
         # Return a random move in the absence of heuristic difference
@@ -136,30 +131,62 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Unpack nodes into their child states
-    def unpack(self,root: Node, true_root: Node) -> np.array(Node):
+    def unpack(self, maximizer: chess.Color, root: Node, depth: int, true_root: Node) -> np.array(Node):
+
         base_board: AIChessBoard = root.board
         legalmoves = np.array(list(root.board.legal_moves))
-        nodes = np.empty(len(legalmoves), dtype=Move)
+        nodes = []
+        # For alpha-beta-pruning
+        value = ALPHA_DEFAULT if root.board.turn == maximizer else BETA_DEFAULT
+
         for i, move in enumerate(legalmoves):
             board = base_board.copy()
             board.push(move)
-            nodes[i] = Node(
+            
+            nodes.append(Node(
                 reward_if_taking_best_move=REWARD_DEFAULT,
                 board=board, 
                 move_that_generated_this_board=move,
                 best_move_from_board=None,
                 win_status=None, # taken care of by recursive call
-                min=MIN_DEFAULT, 
-                max=MAX_DEFAULT, 
+                alpha=root.alpha,
+                beta=root.beta,
                 parent=root
-            )
-        return nodes
+            ))
 
+            # If Alpha-beta-pruning, prune nodes
+            if self.run_alpha_beta:
+                # Check if child is a leaf
+                terminal_state = self.check_terminal_state(
+                    root=nodes[i],
+                    root_board=true_root,
+                    depth=depth,
+                    maximizer=maximizer,
+                )
+                nodes[i].reward_if_taking_best_move = terminal_state if terminal_state is not None \
+                    else REWARD_DEFAULT
+                is_pruned = self.alpha_beta_pruning(max_player=maximizer, value=value, children=nodes, child_index=i)
+
+                if is_pruned:
+                    return np.array(nodes)
+
+        return np.array(nodes)
+
+    def alpha_beta_pruning(self, max_player: chess.Color, value: int, children: np.array(Node), child_index: int) -> bool:
+        value = max(value, children[child_index].reward_if_taking_best_move) \
+            if max_player == children[child_index].parent.board.turn \
+            else min(value, children[child_index].reward_if_taking_best_move)
+
+        if value >= children[child_index].parent.beta or value <= children[child_index].parent.alpha:
+            return True
+
+        children[child_index].parent.alpha = max(children[child_index].parent.alpha, value)
+        children[child_index].parent.beta = min(children[child_index].parent.beta, value)
+        return False
 
     def calc_reward(self,board: AIChessBoard, root_board: Node) -> int:
         heuristic_value = self.heuristic_calculator.return_heuristic_value(board, root_board.turn)
         return heuristic_value
-
 
 
     def white_wins(self, board: AIChessBoard) -> bool:

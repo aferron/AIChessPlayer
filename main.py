@@ -77,7 +77,8 @@ class Main:
         depth_iterations = [1, 2, 3]
         baselines =  [MinimaxPlayer(
             depth=depth, 
-            heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces]) \
+            heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces],
+            run_alpha_beta=True) \
                 for depth in depth_iterations]
         testplayers = [
             MinimaxPlayer(
@@ -88,7 +89,8 @@ class Main:
                     Heuristic.Keep_Pawns_Diagonally_Supported, 
                     Heuristic.Stacked_Pawns, 
                     Heuristic.Maximize_Number_Of_Pieces
-                ]
+                ],
+                run_alpha_beta=True
             ) for depth in depth_iterations]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
@@ -96,15 +98,16 @@ class Main:
         num_iterations = 10
         depth = 3
         all_heuristics = list(Heuristic)
-        baselines =  [MinimaxPlayer(depth=depth, heuristics=[]), MinimaxPlayer(depth=depth, heuristics=all_heuristics)]
-        testplayers = [MinimaxPlayer(depth=depth, heuristics=[heuristic]) for heuristic in all_heuristics] + \
-            [MinimaxPlayer(depth=depth, heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index]) for index in range(len(all_heuristics))]
+        baselines =  [MinimaxPlayer(depth=depth, heuristics=[], run_alpha_beta=False), MinimaxPlayer(depth=depth, heuristics=all_heuristics, run_alpha_beta=True)]
+        testplayers = [MinimaxPlayer(depth=depth, heuristics=[heuristic], run_alpha_beta=True) for heuristic in all_heuristics] + \
+            [MinimaxPlayer(depth=depth, heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index], run_alpha_beta=False) for index in range(len(all_heuristics))]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
     def __run_minimax_with_heuristics_vs_random(self) -> None:
         num_iterations = 100
         baselines = [RandomChessPlayer()]
-        testplayers = [MinimaxPlayer(depth=depth, heuristics=list(Heuristic)) for depth in range(4)]
+        testplayers = [MinimaxPlayer(depth=depth, heuristics=list(Heuristic), run_alpha_beta=False) for depth in range(4)]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
 Main().run()
+
