@@ -69,7 +69,8 @@ class MinimaxPlayer(ChessPlayer):
         self.heuristic_calculator = Heuristics(heuristics)
         self.run_alpha_beta = run_alpha_beta
         self.__name = self.__class__.__name__ + "\n(depth: " + str(depth) + \
-            ";\n heuristics: " + str(self.heuristic_calculator) + ")"
+            ";\n heuristics: " + str(self.heuristic_calculator) + \
+                ";\n AB pruning:" + "on" if self.alpha_beta_pruning else "off" + ")"
 
     def _ChessPlayer__get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board=board, depth=self.depth)
