@@ -70,7 +70,7 @@ class Main:
         ax.bar_label(rects3, padding=3)
         fig.tight_layout()
         plt.savefig('charts/' + title)
-        # plt.show()
+        plt.show()
 
     def __run_heuristics_by_depth_experiments(self) -> None:
         num_iterations = 50
