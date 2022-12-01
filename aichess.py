@@ -66,7 +66,7 @@ class AIChess:
 
             total_moves += game.player_white.total_moves + game.player_black.total_moves
 
-            player1_starts != player1_starts
+            player1_starts = not player1_starts
         
         percent_wins_player1 = player1_wins / self.__iterations
         percent_draws = draws / self.__iterations
