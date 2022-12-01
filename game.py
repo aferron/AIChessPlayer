@@ -30,7 +30,9 @@ class Game:
         while self.terminated is False:
             player = self.player_white if self.board.turn is True else self.player_black
             try:
+                start_player_move_time = 0
                 player_move = player.get_next_move(self.board)
+                end_player_move_time = 1
                 if player_move == None:
                     self.terminated = True
                     return None
