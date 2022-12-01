@@ -44,10 +44,13 @@ class AIChess:
         player1_wins = 0
         draws = 0
         total_moves = 0
+        player1_starts = True
+
         for i in tqdm(range(self.__iterations)):
+            
             game = Game(
-                white=player1,
-                black=player2,
+                white=player1 if player1_starts else player2,
+                black=player2 if player1_starts else player1,
                 visual=self.__visual,
                 verbose=self.__verbose
             )
@@ -56,11 +59,14 @@ class AIChess:
             if winner is None:
                 draws += 1
 
-            # If winner is True, white won (player1)
-            elif winner:
+            # If winner is True and player1_starts is True, player1 won
+            # If winner is False and player1_starts is False, player1 won
+            elif winner == player1_starts:
                 player1_wins += 1
 
             total_moves += game.player_white.total_moves + game.player_black.total_moves
+
+            player1_starts = not player1_starts
         
         percent_wins_player1 = player1_wins / self.__iterations
         percent_draws = draws / self.__iterations
@@ -83,20 +89,3 @@ class AIChess:
 
     def get_results(self) -> Results:
         return self.__results
-
-      # How to use:
-        # baseline = RandomChessPlayer()
-        # testplayers = [
-        #     RandomChessPlayer(),
-        #     minimaxPlayer(depth=1),
-        #     minimaxPlayer(depth=2)
-        # ]
-        # aichess = AIChess(
-        #     iterations=100, 
-        #     baseline=baseline,
-        #     testplayers=testplayers
-        # )
-        # aichess.run()
-        # results = aichess.get_results()
-        # for result in results:
-        #     print(result)
