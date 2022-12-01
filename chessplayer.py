@@ -17,14 +17,9 @@ class ChessPlayer(ABC):
     def get_next_move(self, board: AIChessBoard) -> Move:
         self.total_moves += 1
         start = self.__time.process_time()
-        print(start)
         next_move = self.__get_next_move(board)
-        end = self.__time.process_time()
-        print(end)
-        process_time = end - start
-        print(process_time)
+        process_time = self.__time.process_time() - start
         self.average_time_to_get_move += (process_time - self.average_time_to_get_move) / self.total_moves
-        print(self.average_time_to_get_move)
         return next_move
 
     @abstractmethod

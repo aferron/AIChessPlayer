@@ -1,11 +1,19 @@
 from aichess import AIChess, Results
 from chessplayer import ChessPlayer
+from dataclasses import dataclass
+from enum import Enum
 from heuristics import Heuristic
 import matplotlib.pyplot as plt
 import numpy as np
 from minimaxchessplayer import MinimaxPlayer
 from randomchessplayer import RandomChessPlayer
-from typing import List
+import time
+from typing import Any, List
+
+@dataclass
+class ResultsPerMatchup:
+    results_per_matchup: List[Any]
+    label: str
 
 class Main:
     def run(self) -> None:
@@ -17,32 +25,58 @@ class Main:
         for i, results_per_baseline in enumerate(test_results):
             baseline = baselines[i]
             print ("results_per_baseline:", results_per_baseline)
-            test_player_wins, baseline_wins, draws = [], [], []
+            test_player_wins, baseline_wins, draws, process_time_player1, process_time_player2, moves_per_game = [], [], [], [], [], []
             for results in results_per_baseline:
                 print("results: ", results)
                 self.__append_as_percent(results_by_type=test_player_wins, percent=results.percent_wins_player1)
                 self.__append_as_percent(results_by_type=baseline_wins, percent=results.percent_wins_player2)
                 self.__append_as_percent(results_by_type=draws, percent=results.percent_draws)
+                process_time_player1.append(results.average_decision_time_player1)
+                process_time_player2.append(results.average_decision_time_player2)
+                moves_per_game.append(results.average_moves_per_game)
+
+            win_results = [
+                ResultsPerMatchup(test_player_wins, "Test Player Wins"),
+                ResultsPerMatchup(baseline_wins, "Baseline Wins"),
+                ResultsPerMatchup(draws, "Draws")
+            ]
+            time_results = [
+                ResultsPerMatchup(process_time_player1, "Test Player"),
+                ResultsPerMatchup(process_time_player2, "Baseline Player")
+            ]
+            avg_moves_results = [ResultsPerMatchup(moves_per_game, "Moves")]
             self.__plot_results(
                 baseline=baseline,
                 testplayers=testplayers,
                 iterations=iterations, 
-                wins=test_player_wins, 
-                losses=baseline_wins, 
-                draws=draws
-                )
+                matchupresults=win_results,
+                ylabel='Percent Wins or Draws'
+            )
+            self.__plot_results(
+                baseline=baseline,
+                testplayers=testplayers,
+                iterations=iterations, 
+                matchupresults=time_results,
+                ylabel='Average Processing Time Per Move in Seconds'
+            )
+            self.__plot_results(
+                baseline=baseline,
+                testplayers=testplayers,
+                iterations=iterations, 
+                matchupresults=avg_moves_results,
+                ylabel='Average Number of Moves Per Game'
+            )
 
     def __append_as_percent(self, results_by_type: np.array(float), percent: float) -> None:
         results_by_type.append(np.round(percent, 2) * 100)
 
     def __plot_results(
         self,
-        baseline: ChessPlayer, 
-        testplayers: List[ChessPlayer], 
-        iterations: int, 
-        wins: list[int], 
-        losses: list[int], 
-        draws: list[int]
+        baseline: ChessPlayer,
+        testplayers: List[ChessPlayer],
+        iterations: int,
+        matchupresults: List[ResultsPerMatchup],
+        ylabel: str
     ) -> None:
         title = 'Baseline: ' + baseline.get_name() + '\n' + str(iterations) + \
             ' iterations per run'
@@ -53,21 +87,25 @@ class Main:
         r1 = np.arange(len(labels))
         r2 = [x + width for x in r1]
         r3 = [x + width for x in r2]
+        x_locations = [r1, r2, r3]
 
         fig, ax = plt.subplots()
-        rects1 = ax.bar(r1, wins, width, label='Test Player Wins')
-        rects2 = ax.bar(r2, losses, width, label='Baseline Wins')
-        rects3 = ax.bar(r3, draws, width, label='Draws')
+        rects = [ax.bar(
+            x_locations[i], 
+            matchupresults[i].results_per_matchup, 
+            width, 
+            label=matchupresults[i].label
+        ) for i in range(len(matchupresults))]
 
-        ax.set_ylabel('Percent Wins or Draws')
+        ax.set_ylabel(ylabel)
         ax.set_xlabel('Player Type')
         ax.set_title(title)
         ax.set_xticks(x, labels)
         ax.legend()
 
-        ax.bar_label(rects1, padding=3)
-        ax.bar_label(rects2, padding=3)
-        ax.bar_label(rects3, padding=3)
+        for rect in rects:
+            ax.bar_label(rect, padding=3)
+
         fig.tight_layout()
         plt.savefig('charts/' + title)
         plt.show()
@@ -76,12 +114,14 @@ class Main:
         num_iterations = 5
         depth_iterations = [1, 2, ]
         baselines =  [MinimaxPlayer(
+            time=time,
             depth=depth, 
             heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces],
             run_alpha_beta=True) \
                 for depth in depth_iterations]
         testplayers = [
             MinimaxPlayer(
+                time=time,
                 depth=depth, 
                 heuristics=[
                     Heuristic.Piece_Could_Be_Captured, 
@@ -98,15 +138,30 @@ class Main:
         num_iterations = 10
         depth = 3
         all_heuristics = list(Heuristic)
-        baselines =  [MinimaxPlayer(depth=depth, heuristics=[], run_alpha_beta=False), MinimaxPlayer(depth=depth, heuristics=all_heuristics, run_alpha_beta=True)]
-        testplayers = [MinimaxPlayer(depth=depth, heuristics=[heuristic], run_alpha_beta=True) for heuristic in all_heuristics] + \
-            [MinimaxPlayer(depth=depth, heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index], run_alpha_beta=False) for index in range(len(all_heuristics))]
+        baselines =  [MinimaxPlayer(
+            time=time,
+            depth=depth, 
+            heuristics=[],
+            run_alpha_beta=True
+        ), MinimaxPlayer(
+            time=time, 
+            depth=depth, 
+            heuristics=all_heuristics, 
+            run_alpha_beta=True
+        )]
+        testplayers = [MinimaxPlayer(
+            time=time, 
+            depth=depth, 
+            heuristics=[heuristic],
+            run_alpha_beta=True
+        ) for heuristic in all_heuristics] + \
+            [MinimaxPlayer(time=time, depth=depth, heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index]) for index in range(len(all_heuristics))]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
     def __run_minimax_with_heuristics_vs_random(self) -> None:
         num_iterations = 100
-        baselines = [RandomChessPlayer()]
-        testplayers = [MinimaxPlayer(depth=depth, heuristics=list(Heuristic), run_alpha_beta=False) for depth in range(4)]
+        baselines = [RandomChessPlayer(time=time)]
+        testplayers = [MinimaxPlayer(time=time, depth=depth, heuristics=list(Heuristic), run_alpha_beta=True) for depth in range(3)]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
 Main().run()
