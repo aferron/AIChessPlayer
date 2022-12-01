@@ -99,6 +99,9 @@ class Main:
         for rect in rects:
             ax.bar_label(rect, padding=3)
 
+        for rect in rects:
+            ax.bar_label(rect, padding=3)
+
         fig.tight_layout()
         plt.savefig('charts/' + title)
         plt.show()

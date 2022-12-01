@@ -224,7 +224,7 @@ class TestMinimaxChessPlayer:
         )
         minimaxplayer = MinimaxPlayer(time, depth=3, heuristics=[], run_alpha_beta=False)
         with pytest.raises(ChessPlayer.ChessPlayerException):
-            minimaxplayer.__get_next_move(board=board)
+            minimaxplayer.get_next_move(board=board)
         
     def test_get_next_move_returns_best_move(self) -> None:
         board_fen = '8/1p1p4/8/8/8/5p2/1P1P4/8'
