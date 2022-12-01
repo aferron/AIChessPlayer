@@ -3,11 +3,12 @@ from aichessboard import AIChessBoard
 import chess
 from chess import Move
 from chessplayer import ChessPlayer
-from heuristics import Heuristic, Heuristics
 from dataclasses import dataclass, field
 from enum import Enum
-import numpy as np
+from heuristics import Heuristic, Heuristics
 import math
+import numpy as np
+from typing import Any
 
 REWARD_DEFAULT = 0
 ALPHA_DEFAULT = -math.inf
@@ -56,15 +57,15 @@ class Node:
         return self.reward_if_taking_best_move == other.reward_if_taking_best_move
 
 class MinimaxPlayer(ChessPlayer):
-    def __init__(self, depth: int, heuristics: list(Heuristic), run_alpha_beta: bool) -> None:
-        super().__init__()
+    def __init__(self, time: Any, depth: int, heuristics: list(Heuristic), run_alpha_beta: bool) -> None:
+        super().__init__(time)
         self.depth = depth
         self.heuristic_calculator = Heuristics(heuristics)
         self.run_alpha_beta = run_alpha_beta
         self.__name = self.__class__.__name__ + "\n(depth: " + str(depth) + \
             ";\n heuristics: " + str(self.heuristic_calculator) + ")"
 
-    def get_next_move(self, board: AIChessBoard) -> Move:
+    def _ChessPlayer__get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board=board, depth=self.depth)
 
     # Wrapper function for pre_order
