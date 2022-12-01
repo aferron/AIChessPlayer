@@ -57,7 +57,13 @@ class Node:
         return self.reward_if_taking_best_move == other.reward_if_taking_best_move
 
 class MinimaxPlayer(ChessPlayer):
-    def __init__(self, time: Any, depth: int, heuristics: list(Heuristic), run_alpha_beta: bool) -> None:
+    def __init__(
+        self,
+        time: Any,
+        depth: int,
+        heuristics: list(Heuristic),
+        run_alpha_beta: bool
+    ) -> None:
         super().__init__(time)
         self.depth = depth
         self.heuristic_calculator = Heuristics(heuristics)
@@ -159,14 +165,19 @@ class MinimaxPlayer(ChessPlayer):
             if self.run_alpha_beta:
                 # Check if child is a leaf
                 terminal_state = self.check_terminal_state(
-                    root=nodes[i],
+                    current=nodes[i],
                     root_board=true_root,
                     depth=depth,
                     maximizer=maximizer,
                 )
                 nodes[i].reward_if_taking_best_move = terminal_state if terminal_state is not None \
                     else REWARD_DEFAULT
-                is_pruned = self.alpha_beta_pruning(max_player=maximizer, value=value, children=nodes, child_index=i)
+                is_pruned = self.alpha_beta_pruning(
+                    max_player=maximizer,
+                    value=value,
+                    children=nodes,
+                    child_index=i
+                )
 
                 if is_pruned:
                     return np.array(nodes)
