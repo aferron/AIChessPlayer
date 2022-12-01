@@ -17,7 +17,9 @@ class ResultsPerMatchup:
 
 class Main:
     def run(self) -> None:
-        self.__run_heuristics_by_depth_experiments()
+        # self.__run_minimax_with_heuristics_vs_random()
+        # self.__run_heuristics_ablation_study()
+        self.__compare_runtimes_of_basic_configs()
 
     def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer]) -> None:
         test_results: List[List[Results]] = AIChess(iterations=iterations, baselines=baselines, testplayers=testplayers).run()
@@ -102,8 +104,8 @@ class Main:
         plt.show()
 
     def __run_heuristics_by_depth_experiments(self) -> None:
-        num_iterations = 5
-        depth_iterations = [1, 2, ]
+        num_iterations = 50
+        depth_iterations = [1, 2, 3, 4, 5]
         baselines =  [MinimaxPlayer(
             time=time,
             depth=depth, 
@@ -126,8 +128,8 @@ class Main:
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
     def __run_heuristics_ablation_study(self) -> None:
-        num_iterations = 10
-        depth = 3
+        num_iterations = 100
+        depth = 4
         all_heuristics = list(Heuristic)
         baselines =  [MinimaxPlayer(
             time=time,
@@ -146,14 +148,50 @@ class Main:
             heuristics=[heuristic],
             run_alpha_beta=True
         ) for heuristic in all_heuristics] + \
-            [MinimaxPlayer(time=time, depth=depth, heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index]) for index in range(len(all_heuristics))]
+            [MinimaxPlayer(
+                time=time, 
+                depth=depth, 
+                heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index],
+                run_alpha_beta=True
+            ) for index in range(len(all_heuristics))]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
     def __run_minimax_with_heuristics_vs_random(self) -> None:
         num_iterations = 100
         baselines = [RandomChessPlayer(time=time)]
-        testplayers = [MinimaxPlayer(time=time, depth=depth, heuristics=list(Heuristic), run_alpha_beta=True) for depth in range(3)]
+        testplayers = [MinimaxPlayer(
+            time=time, 
+            depth=depth, 
+            heuristics=list(Heuristic), 
+            run_alpha_beta=True
+        ) for depth in range(3)]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
+
+    def __compare_runtimes_of_basic_configs(self) -> None:
+        depth = 1
+        baselines = [RandomChessPlayer(time=time)]
+        testplayers = [
+            RandomChessPlayer(time=time),
+            MinimaxPlayer(
+                time=time,
+                depth=depth,
+                heuristics=[],
+                run_alpha_beta=False
+            ),
+            MinimaxPlayer(
+                time=time,
+                depth=depth,
+                heuristics=list(Heuristic),
+                run_alpha_beta=False
+            ),
+            MinimaxPlayer(
+                time=time,
+                depth=depth,
+                heuristics=list(Heuristic),
+                run_alpha_beta=True
+            )
+        ]
+        self.__run_and_plot_one_experiment(iterations=1, baselines=baselines, testplayers=testplayers)
 
 Main().run()
 

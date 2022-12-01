@@ -19,7 +19,7 @@ class Heuristic(Enum):
 
 
 class Heuristics: 
-    def __init__(self, list_of_heuristics: List[Heuristic] ):
+    def __init__(self, list_of_heuristics: List[Heuristic]):
         self.list_of_heuristics: List[Heuristic] = list_of_heuristics
 
     def __str__(self) -> str:
