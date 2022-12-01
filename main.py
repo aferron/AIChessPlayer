@@ -168,7 +168,7 @@ class Main:
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
     def __compare_runtimes_of_basic_configs(self) -> None:
-        depth = 1
+        depth = 3
         baselines = [RandomChessPlayer(time=time)]
         testplayers = [
             RandomChessPlayer(time=time),
@@ -191,7 +191,7 @@ class Main:
                 run_alpha_beta=True
             )
         ]
-        self.__run_and_plot_one_experiment(iterations=1, baselines=baselines, testplayers=testplayers)
+        self.__run_and_plot_one_experiment(iterations=100, baselines=baselines, testplayers=testplayers)
 
 Main().run()
 
