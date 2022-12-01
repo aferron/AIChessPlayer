@@ -13,17 +13,10 @@ class Game:
         self.board = AIChessBoard('8/pppppppp/8/8/8/8/PPPPPPPP/8')
         self.terminated = False
         self.winner: bool = None
-
-    # TODO: Remove this function unless it's needed
-    def __make_a_move(self, move_from: chess.Square, move_to: chess.Square) -> None:
-        self.board.push(Move(move_from, move_to))
-        if self.__visual:
-            print(self.board, "\n")
-        outcome = self.board.outcome()
-        if outcome != None:
-            self.terminated = True
-            if self.__verbose:
-                print("white" if outcome.winner else "black", " wins")
+        self.total_moves_for_white: int = 0
+        self.total_moves_for_black: int = 0
+        self.average_time_to_get_move_for_white: float = 0.0
+        self.average_time_to_get_move_for_black: float = 0.0
 
     def __make_a_move(self, move: Move) -> None:
         if move != None:
@@ -41,7 +34,9 @@ class Game:
         while self.terminated is False:
             player = self.player_white if self.board.turn is True else self.player_black
             try:
+                start_player_move_time = 0
                 player_move = player.get_next_move(self.board)
+                end_player_move_time = 1
                 if player_move == None:
                     self.terminated = True
                     return None
