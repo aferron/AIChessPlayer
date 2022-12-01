@@ -92,8 +92,8 @@ class MinimaxPlayer(ChessPlayer):
     def pre_order(self, root_board: AIChessBoard, current: Node, depth: int) -> Node:
 
         early_exit_reward = self.check_terminal_state(
-            root=current,
-            root_board= root_board, 
+            current=current,
+            root_board=root_board, 
             depth=depth, 
             maximizer=root_board.turn
         )
@@ -185,8 +185,8 @@ class MinimaxPlayer(ChessPlayer):
         children[child_index].parent.beta = min(children[child_index].parent.beta, value)
         return False
 
-    def calc_reward(self,board: AIChessBoard, root_board: Node) -> int:
-        heuristic_value = self.heuristic_calculator.return_heuristic_value(board, root_board.turn)
+    def calc_reward(self, current_board: AIChessBoard, root_board: AIChessBoard) -> int:
+        heuristic_value = self.heuristic_calculator.return_heuristic_value(current_board, root_board.turn)
         return heuristic_value
 
 
@@ -199,13 +199,13 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Check if the state is an end state and return rewards if so
-    def check_terminal_state(self, root: Node, root_board: Node, depth: int, maximizer: chess.Color) -> int:
-        if self.white_wins(root.board):
+    def check_terminal_state(self, current: Node, root_board: AIChessBoard, depth: int, maximizer: chess.Color) -> int:
+        if self.white_wins(current.board):
             return WinReward.WIN.value if maximizer == chess.WHITE else WinReward.LOSS.value
-        elif self.black_wins(root.board):
+        elif self.black_wins(current.board):
             return WinReward.WIN.value if maximizer == chess.BLACK else WinReward.LOSS.value
         elif depth <= 0:
-            return self.calc_reward(root.board, root_board)
+            return self.calc_reward(current.board, root_board)
         else:
             return None
 
