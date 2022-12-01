@@ -2,7 +2,6 @@ from array import *
 from chessplayer import ChessPlayer
 from dataclasses import dataclass
 from game import Game
-import random
 from tqdm import tqdm
 
 
@@ -45,9 +44,10 @@ class AIChess:
         player1_wins = 0
         draws = 0
         total_moves = 0
-        for i in tqdm(range(self.__iterations)):
-            player1_starts = random.choice([True, False])
+        player1_starts = True
 
+        for i in tqdm(range(self.__iterations)):
+            
             game = Game(
                 white=player1 if player1_starts else player2,
                 black=player2 if player1_starts else player1,
@@ -65,6 +65,8 @@ class AIChess:
                 player1_wins += 1
 
             total_moves += game.player_white.total_moves + game.player_black.total_moves
+
+            player1_starts != player1_starts
         
         percent_wins_player1 = player1_wins / self.__iterations
         percent_draws = draws / self.__iterations
