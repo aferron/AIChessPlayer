@@ -98,14 +98,11 @@ class Main:
         num_iterations = 10
         depth = 3
         all_heuristics = list(Heuristic)
-        baselines =  [MinimaxPlayer(depth=depth, heuristics=[]), MinimaxPlayer(depth=depth, heuristics=all_heuristics, run_alpha_beta=True)]
+        baselines =  [MinimaxPlayer(depth=depth, heuristics=[], run_alpha_beta=False), MinimaxPlayer(depth=depth, heuristics=all_heuristics, run_alpha_beta=True)]
         testplayers = [MinimaxPlayer(depth=depth, heuristics=[heuristic], run_alpha_beta=True) for heuristic in all_heuristics] + \
             [MinimaxPlayer(depth=depth, heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index], run_alpha_beta=False) for index in range(len(all_heuristics))]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
 
-
-Main().run()
-=======
     def __run_minimax_with_heuristics_vs_random(self) -> None:
         num_iterations = 100
         baselines = [RandomChessPlayer()]
