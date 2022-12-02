@@ -22,7 +22,7 @@ class Main:
         self.__run_minimax_with_heuristics_vs_random()
         # self.__compare_runtimes_of_basic_configs()
 
-    def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer]) -> None:
+    def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer], title_addition: str) -> None:
         test_results: List[List[Results]] = AIChess(iterations=iterations, baselines=baselines, testplayers=testplayers).run()
         print("test_results: ", test_results)
         for i, results_per_baseline in enumerate(test_results):
@@ -43,22 +43,24 @@ class Main:
                 ResultsPerMatchup(draws, "Draws")
             ]
             time_results = [
-                ResultsPerMatchup(process_time_player1, "Test Player"),
-                ResultsPerMatchup(process_time_player2, "Baseline Player")
+                ResultsPerMatchup([round(time, 4) for time in process_time_player1], "Test Player"),
+                ResultsPerMatchup([round(time, 4) for time in process_time_player2], "Baseline Player")
             ]
             self.__plot_results(
                 baseline=baseline,
                 testplayers=testplayers,
                 iterations=iterations, 
                 matchupresults=win_results,
-                ylabel='Percent Wins or Draws'
+                ylabel='Percent Wins or Draws',
+                title_addition=title_addition
             )
             self.__plot_results(
                 baseline=baseline,
                 testplayers=testplayers,
                 iterations=iterations, 
                 matchupresults=time_results,
-                ylabel='Average Processing Time Per Move in Seconds'
+                ylabel='Average Processing Time Per Move in Seconds',
+                title_addition=title_addition
             )
 
     def __append_as_percent(self, results_by_type: np.array(float), percent: float) -> None:
@@ -70,9 +72,12 @@ class Main:
         testplayers: List[ChessPlayer],
         iterations: int,
         matchupresults: List[ResultsPerMatchup],
-        ylabel: str
+        ylabel: str,
+        title_addition: str
     ) -> None:
-        title = 'Baseline: ' + baseline.get_name() + '\n' + str(iterations) + \
+        title_of_saved_file = title_addition + 'Baseline-' + baseline.get_name()+ ' ' + str(iterations) + \
+            ' iterations per run'
+        title_of_graph = title_addition + '\n' + ' Baseline: ' + baseline.get_name()+ '\n' + str(iterations) + \
             ' iterations per run'
         labels = [player.get_name() for player in testplayers]
         x = np.arange(len(labels))
@@ -93,7 +98,7 @@ class Main:
 
         ax.set_ylabel(ylabel)
         ax.set_xlabel('Player Type')
-        ax.set_title(title)
+        ax.set_title(title_of_graph)
         ax.set_xticks(x, labels)
         ax.legend(bbox_to_anchor=(.2,1.2,0,0))
 
@@ -104,10 +109,11 @@ class Main:
             ax.bar_label(rect, padding=3)
 
         fig.tight_layout()
-        plt.savefig('charts/' + title)
+        plt.savefig('charts/' + title_of_saved_file)
         plt.show()
 
     def __run_heuristics_by_depth_experiments(self) -> None:
+        title = "Heuristics by Depth"
         num_iterations = 50
         depth_iterations = [1, 2, 3, 4, 5]
         baselines =  [MinimaxPlayer(
@@ -129,9 +135,10 @@ class Main:
                 ],
                 run_alpha_beta=True
             ) for depth in depth_iterations]
-        self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
+        self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers, title_addition=title)
 
     def __run_heuristics_ablation_study(self) -> None:
+        title = 'Heuristic Ablation Study'
         num_iterations = 100
         depth = 4
         all_heuristics = list(Heuristic)
@@ -158,9 +165,10 @@ class Main:
                 heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index],
                 run_alpha_beta=True
             ) for index in range(len(all_heuristics))]
-        self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
+        self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers, title_addition=title)
 
     def __run_minimax_with_heuristics_vs_random(self) -> None:
+        title = 'Minimax with Heuristics vs Random Player'
         num_iterations = 100
         baselines = [RandomChessPlayer(time=time)]
         testplayers = [MinimaxPlayer(
@@ -169,9 +177,10 @@ class Main:
             heuristics=list(Heuristic), 
             run_alpha_beta=True
         ) for depth in range(4)]
-        self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers)
+        self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers, title_addition=title)
 
     def __compare_runtimes_of_basic_configs(self) -> None:
+        title = 'Runtime of Basic Configurations'
         depth = 3
         baselines = [RandomChessPlayer(time=time)]
         testplayers = [
@@ -195,7 +204,7 @@ class Main:
                 run_alpha_beta=True
             )
         ]
-        self.__run_and_plot_one_experiment(iterations=100, baselines=baselines, testplayers=testplayers)
+        self.__run_and_plot_one_experiment(iterations=100, baselines=baselines, testplayers=testplayers, title_addition=title)
 
 Main().run()
 

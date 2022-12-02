@@ -27,7 +27,7 @@ class Heuristics:
         for heuristic in self.list_of_heuristics:
             heuristics += str(heuristic.value)
             if heuristic is not self.list_of_heuristics[-1]:
-                heuristics += ", "
+                heuristics += ","
         return heuristics
 
     def return_heuristic_value(self, board: Board, player_color: chess.Color) -> int:
