@@ -34,7 +34,7 @@ class Node:
     board:          AIChessBoard=field(compare=False)
     move_that_generated_this_board: Move=field(compare=False)
     best_move_from_board: Move=field(compare=False)
-    win_status:     WinStatus=field(compare=False) 
+    win_status:     WinStatus=field(compare=False)
     alpha:            int=field(compare=False)
     beta:            int=field(compare=False)
     parent:         Node=field(compare=False)
@@ -42,7 +42,7 @@ class Node:
     def copy(self) -> Node:
         return Node(
             self.reward_if_taking_best_move,
-            self.board, 
+            self.board,
             self.move_that_generated_this_board,
             self.best_move_from_board,
             self.win_status,
@@ -70,7 +70,7 @@ class MinimaxPlayer(ChessPlayer):
         self.run_alpha_beta = run_alpha_beta
         self.__name = self.__class__.__name__ + "\n(depth: " + str(depth) + \
             ";\n heuristics: " + str(self.heuristic_calculator) + \
-                ";\n AB pruning:" + "on" if self.alpha_beta_pruning else "off" + ")"
+                ";\n AB pruning:" + ("on" if self.run_alpha_beta else "off") + ")"
 
     def _ChessPlayer__get_next_move(self, board: AIChessBoard) -> Move:
         return self.min_max(board=board, depth=self.depth)
@@ -100,8 +100,8 @@ class MinimaxPlayer(ChessPlayer):
 
         early_exit_reward = self.check_terminal_state(
             current=current,
-            root_board=root_board, 
-            depth=depth, 
+            root_board=root_board,
+            depth=depth,
             maximizer=root_board.turn
         )
         if early_exit_reward != None:
@@ -118,7 +118,7 @@ class MinimaxPlayer(ChessPlayer):
         children: np.array(Node) = self.unpack(maximizer=root_board.turn, root=current, depth=depth, true_root=root_board)
 
         # Check if no viable moves are left in this path
-        if children.size == 0: 
+        if children.size == 0:
             current.reward_if_taking_best_move = WinReward.DRAW.value
             return current
 
@@ -150,10 +150,10 @@ class MinimaxPlayer(ChessPlayer):
         for i, move in enumerate(legalmoves):
             board = base_board.copy()
             board.push(move)
-            
+
             nodes.append(Node(
                 reward_if_taking_best_move=REWARD_DEFAULT,
-                board=board, 
+                board=board,
                 move_that_generated_this_board=move,
                 best_move_from_board=None,
                 win_status=None, # taken care of by recursive call
