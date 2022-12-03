@@ -47,17 +47,19 @@ class Main:
                 ResultsPerMatchup([round(time, 4) for time in process_time_player2], "Baseline Player")
             ]
             self.__plot_results(
+                graph_type = 'wins',
                 baseline=baseline,
                 testplayers=testplayers,
-                iterations=iterations, 
+                iterations=iterations,
                 matchupresults=win_results,
                 ylabel='Percent Wins or Draws',
                 title_addition=title_addition
             )
             self.__plot_results(
+                graph_type = 'processing-time',
                 baseline=baseline,
                 testplayers=testplayers,
-                iterations=iterations, 
+                iterations=iterations,
                 matchupresults=time_results,
                 ylabel='Average Processing Time Per Move in Seconds',
                 title_addition=title_addition
@@ -68,6 +70,7 @@ class Main:
 
     def __plot_results(
         self,
+        graph_type: str,
         baseline: ChessPlayer,
         testplayers: List[ChessPlayer],
         iterations: int,
@@ -90,9 +93,9 @@ class Main:
 
         fig, ax = plt.subplots(figsize=((len(labels)*1.85),6))
         rects = [ax.bar(
-            x_locations[i], 
-            matchupresults[i].results_per_matchup, 
-            width, 
+            x_locations[i],
+            matchupresults[i].results_per_matchup,
+            width,
             label=matchupresults[i].label
         ) for i in range(len(matchupresults))]
 
@@ -109,7 +112,7 @@ class Main:
             ax.bar_label(rect, padding=3)
 
         fig.tight_layout()
-        plt.savefig('charts/' + title_of_saved_file)
+        plt.savefig('charts/' + title_of_saved_file + "-" + graph_type)
         plt.show()
 
     def __run_heuristics_by_depth_experiments(self) -> None:
@@ -118,14 +121,14 @@ class Main:
         depth_iterations = [1, 2, 3, 4, 5]
         baselines =  [MinimaxPlayer(
             time=time,
-            depth=depth, 
+            depth=depth,
             heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces],
             run_alpha_beta=True) \
                 for depth in depth_iterations]
         testplayers = [
             MinimaxPlayer(
                 time=time,
-                depth=depth, 
+                depth=depth,
                 heuristics=[
                     Heuristic.Piece_Could_Be_Captured,
                     Heuristic.Distance_From_Starting_Location,
@@ -144,24 +147,24 @@ class Main:
         all_heuristics = list(Heuristic)
         baselines =  [MinimaxPlayer(
             time=time,
-            depth=depth, 
+            depth=depth,
             heuristics=[],
             run_alpha_beta=True
         ), MinimaxPlayer(
-            time=time, 
-            depth=depth, 
-            heuristics=all_heuristics, 
+            time=time,
+            depth=depth,
+            heuristics=all_heuristics,
             run_alpha_beta=True
         )]
         testplayers = [MinimaxPlayer(
-            time=time, 
-            depth=depth, 
+            time=time,
+            depth=depth,
             heuristics=[heuristic],
             run_alpha_beta=True
         ) for heuristic in all_heuristics] + \
             [MinimaxPlayer(
-                time=time, 
-                depth=depth, 
+                time=time,
+                depth=depth,
                 heuristics=[heuristic for heuristic in all_heuristics if all_heuristics.index(heuristic) != index],
                 run_alpha_beta=True
             ) for index in range(len(all_heuristics))]
@@ -172,9 +175,9 @@ class Main:
         num_iterations = 100
         baselines = [RandomChessPlayer(time=time)]
         testplayers = [MinimaxPlayer(
-            time=time, 
-            depth=depth, 
-            heuristics=list(Heuristic), 
+            time=time,
+            depth=depth,
+            heuristics=list(Heuristic),
             run_alpha_beta=True
         ) for depth in range(4)]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers, title_addition=title)
