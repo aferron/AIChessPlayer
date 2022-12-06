@@ -112,7 +112,7 @@ class Main:
             ax.bar_label(rect, padding=3)
 
         fig.tight_layout()
- #       plt.savefig('charts/' + title_of_saved_file + "-" + graph_type)
+        plt.savefig('charts/' + title_of_saved_file + "-" + graph_type)
         plt.show()
 
     def __run_heuristics_by_depth_experiments(self) -> None:
