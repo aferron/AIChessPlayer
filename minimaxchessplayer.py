@@ -125,6 +125,10 @@ class MinimaxPlayer(ChessPlayer):
         tree = []
         for child in children:
             child_node = self.pre_order(root_board=root_board, current=child, depth=depth - 1)
+            if self.run_alpha_beta:
+                is_pruned = self.alpha_beta_pruning(max_player=root_board.turn, child=child, current=current)
+                if is_pruned:
+                    break
             tree.append(child_node)
 
         # Return a random move in the absence of heuristic difference
@@ -143,64 +147,37 @@ class MinimaxPlayer(ChessPlayer):
 
         base_board: AIChessBoard = root.board
         legalmoves = np.array(list(root.board.legal_moves))
-        nodes = []
-        # For alpha-beta-pruning
-        value = ALPHA_DEFAULT if root.board.turn == maximizer else BETA_DEFAULT
+        nodes = np.empty(len(legalmoves), dtype=Move)
 
         for i, move in enumerate(legalmoves):
             board = base_board.copy()
             board.push(move)
 
-            nodes.append(Node(
+            nodes[i] = Node(
                 reward_if_taking_best_move=REWARD_DEFAULT,
                 board=board,
                 move_that_generated_this_board=move,
                 best_move_from_board=None,
                 win_status=None, # taken care of by recursive call
-                alpha=root.alpha,
-                beta=root.beta,
+                alpha=ALPHA_DEFAULT,
+                beta=BETA_DEFAULT,
                 parent=root
-            ))
+            )
+        return nodes
 
-            # If Alpha-beta-pruning, prune nodes
-            if self.run_alpha_beta:
-                # Check if child is a leaf
-                terminal_state = self.check_terminal_state(
-                    current=nodes[i],
-                    root_board=true_root,
-                    depth=depth,
-                    maximizer=maximizer,
-                )
-                nodes[i].reward_if_taking_best_move = terminal_state if terminal_state is not None \
-                    else REWARD_DEFAULT
-                is_pruned = self.alpha_beta_pruning(
-                    max_player=maximizer,
-                    value=value,
-                    children=nodes,
-                    child_index=i
-                )
-
-                if is_pruned:
-                    return np.array(nodes)
-
-        return np.array(nodes)
-
-    def alpha_beta_pruning(self, max_player: chess.Color, value: int, children: np.array(Node), child_index: int) -> bool:
-        is_max_player = True if max_player == children[child_index].parent.board.turn else False
-
-        value = max(value, children[child_index].reward_if_taking_best_move) \
-            if is_max_player else min(value, children[child_index].reward_if_taking_best_move)
+    def alpha_beta_pruning(self, max_player: chess.Color, child: Node, current: Node) -> bool:
+        is_max_player = True if max_player == current.board.turn else False
 
         # Do beta pruning only if maximizer
         if is_max_player:
-            if value >= children[child_index].parent.beta:
+            if current.parent is not None and current.alpha >= current.parent.beta:
                 return True
-            children[child_index].parent.alpha = max(children[child_index].parent.alpha, value)
+            current.alpha = max(current.alpha, child.reward_if_taking_best_move)
         # Do alpha pruning only if minimizer
         else:
-            if value <= children[child_index].parent.alpha:
+            if current.parent is not None and current.beta <= current.parent.alpha:
                 return True
-            children[child_index].parent.beta = min(children[child_index].parent.beta, value)
+            current.beta = min(current.beta, child.reward_if_taking_best_move)
         return False
 
     def calc_reward(self, current_board: AIChessBoard, root_board: AIChessBoard) -> int:
