@@ -115,7 +115,7 @@ class MinimaxPlayer(ChessPlayer):
             return current
 
         # Unpack each move to see the states
-        children: np.array(Node) = self.unpack(maximizer=root_board.turn, root=current, depth=depth, true_root=root_board)
+        children: np.array(Node) = self.unpack(root=current)
 
         # Check if no viable moves are left in this path
         if children.size == 0:
@@ -143,7 +143,7 @@ class MinimaxPlayer(ChessPlayer):
 
 
     # Unpack nodes into their child states
-    def unpack(self, maximizer: chess.Color, root: Node, depth: int, true_root: Node) -> np.array(Node):
+    def unpack(self, root: Node) -> np.array(Node):
 
         base_board: AIChessBoard = root.board
         legalmoves = np.array(list(root.board.legal_moves))
