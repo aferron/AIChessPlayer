@@ -19,8 +19,8 @@ class Main:
     def run(self) -> None:
         # self.__run_heuristics_by_depth_experiments()
         # self.__run_heuristics_ablation_study()
-        self.__run_minimax_with_heuristics_vs_random()
-        # self.__compare_runtimes_of_basic_configs()
+        # self.__run_minimax_with_heuristics_vs_random()
+         self.__compare_runtimes_of_basic_configs()
 
     def __run_and_plot_one_experiment(self, iterations: int, baselines: List[ChessPlayer], testplayers: List[ChessPlayer], title_addition: str) -> None:
         test_results: List[List[Results]] = AIChess(iterations=iterations, baselines=baselines, testplayers=testplayers).run()
@@ -118,12 +118,12 @@ class Main:
     def __run_heuristics_by_depth_experiments(self) -> None:
         title = "Heuristics by Depth"
         num_iterations = 50
-        depth_iterations = [1, 2, 3, 4, 5]
+        depth_iterations = [1, 2, 3]
         baselines =  [MinimaxPlayer(
             time=time,
             depth=depth,
             heuristics=[Heuristic.Distance_From_Starting_Location, Heuristic.Maximize_Number_Of_Pieces],
-            run_alpha_beta=True) \
+            run_alpha_beta=False) \
                 for depth in depth_iterations]
         testplayers = [
             MinimaxPlayer(
@@ -136,7 +136,7 @@ class Main:
                     Heuristic.Stacked_Pawns,
                     Heuristic.Maximize_Number_Of_Pieces
                 ],
-                run_alpha_beta=True
+                run_alpha_beta=False
             ) for depth in depth_iterations]
         self.__run_and_plot_one_experiment(iterations=num_iterations, baselines=baselines, testplayers=testplayers, title_addition=title)
 
@@ -193,6 +193,12 @@ class Main:
                 depth=depth,
                 heuristics=[],
                 run_alpha_beta=False
+            ),
+            MinimaxPlayer(
+                time=time,
+                depth=depth,
+                heuristics=[],
+                run_alpha_beta=True
             ),
             MinimaxPlayer(
                 time=time,
