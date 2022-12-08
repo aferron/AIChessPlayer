@@ -40,10 +40,7 @@ COLUMN H: chess.board('7p/7p/7p/7p/7p/7p/7p/7p')
 > The created environment contains a customized board and game class to adjust for the nuances of pawn chess. The victory condition has been replaced in addition to the move mechanics - a custom class has been used to simplify the move making process.
 ---
 ### Movement
-> Movement is controlled using normal mechanics example: A2 to A4. Using our own class called __make_a_move a player can move a piece from position 1 to position 2.
-```python
-__make_a_move(chess.A2, chess.A4)
-```
+> Movement is controlled using normal mechanics example: A2 to A4. Using our own class called "make a move" a player can move a piece from position 1 to position 2.
 ---
 ### Victory
 > Victory is defined by a pawn making it to the other side. This is checked using a flag in the chess library called BB_BACKRANKS. Doing a bitwise 'and' with this and the position of all pawns for a player will return 0 if no pawn has made it to the back and a different positive integer otherwise.
@@ -53,7 +50,21 @@ __make_a_move(chess.A2, chess.A4)
     - Alpha Beta Pruning
 ---
 ### Heuristics
+* Maximize Number Of Pieces
+* Keep Pawns Diagonally Supported
+* Side By Side Pawns
+* Distance From Starting Location
+* Stacked Pawns
+* Piece Could BCaptured
 
 ---
 ### Tools
 - Board to Array: Convert any 64 bit int into a 1 or 2d array for binary free heuristics processing.
+- Pawn Board to Int - Take in a board and return its int representation.
+- Count 1s - Count the number of ones in a binary to give the total number of pawns on the board.
+
+### Contributors
+- Amila Ferron
+- Cordet Gula
+- Nicole Kurtz
+- Ryan Filgas
